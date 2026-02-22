@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JWT Auth Flow — Java &amp; .NET</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#060a10;--s1:#0d1220;--s2:#111827;--s3:#1a2133;--border:rgba(255,255,255,.07);--muted:#64748b;--text:#e2e8f0;--r:12px}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+    code{font-family:'JetBrains Mono',monospace;font-size:.9em}
+
+    /* HEADER */
+    .hdr{position:sticky;top:0;z-index:50;background:rgba(6,10,16,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:12px 18px}
+    .hdr-in{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:12px}
+    .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#f59e0b,#ef4444);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .hdr h1{font-size:14px;font-weight:700}
+    .hdr p{font-size:10px;color:var(--muted);margin-top:1px}
+
+    /* NAV */
+    .nav-pills{display:flex;gap:6px;overflow-x:auto;padding:10px 18px;background:var(--s1);border-bottom:1px solid var(--border);scrollbar-width:none}
+    .nav-pills::-webkit-scrollbar{display:none}
+    .np{flex-shrink:0;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-decoration:none;white-space:nowrap;border:1px solid transparent}
+
+    /* PAGE */
+    .page{max-width:960px;margin:0 auto;padding:20px 14px 60px}
+    h2{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:28px 0 12px}
+
+    /* SECTION CARD */
+    .sec{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+    .sec-head{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+    .sec-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+    .sec-icon{font-size:18px;flex-shrink:0}
+    .sec-info{flex:1;min-width:0}
+    .sec-title{font-size:13px;font-weight:700}
+    .sec-sub{font-size:10px;color:var(--muted);margin-top:1px}
+    .caret{font-size:10px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+    .open .caret{transform:rotate(180deg)}
+    .sec-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}
+    .sec.open .sec-body{display:block}
+    .label{font-size:9px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#334155;margin:12px 0 6px}
+    .code-box{background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:10.5px;line-height:1.7;font-family:'JetBrains Mono',monospace;overflow-x:auto;white-space:pre}
+    .c{color:#64748b}.k{color:#7dd3fc}.m{color:#86efac}.s{color:#fcd34d}.v{color:#f9a8d4}
+    .note{font-size:10px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);color:#fde68a;border-radius:8px;padding:7px 10px;margin-top:8px;line-height:1.5}
+    .note-green{font-size:10px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:#86efac;border-radius:8px;padding:7px 10px;margin-top:8px;line-height:1.5}
+    .note-red{font-size:10px;background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.2);color:#fda4af;border-radius:8px;padding:7px 10px;margin-top:8px;line-height:1.5}
+    .arr{display:flex;justify-content:center;color:#1e3a5f;font-size:22px;margin:2px 0;user-select:none}
+
+    /* Compare table */
+    .cmp{width:100%;border-collapse:collapse;font-size:10px;margin-top:8px}
+    .cmp th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+    .cmp th:first-child{color:#334155}
+    .cmp th:nth-child(2){color:#22c55e}
+    .cmp th:nth-child(3){color:#7c3aed}
+    .cmp td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:top}
+    .cmp td:first-child{color:var(--text);font-weight:600;font-size:10px}
+    .cmp td:nth-child(2){color:#86efac;font-family:'JetBrains Mono',monospace;font-size:9.5px}
+    .cmp td:nth-child(3){color:#c4b5fd;font-family:'JetBrains Mono',monospace;font-size:9.5px}
+
+    /* Colours */
+    .col-a .sec-num{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}.col-a .sec-title{color:#fcd34d}.col-a.open{border-color:rgba(245,158,11,.35)!important}
+    .col-b .sec-num{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}.col-b .sec-title{color:#86efac}.col-b.open{border-color:rgba(34,197,94,.35)!important}
+    .col-c .sec-num{background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff}.col-c .sec-title{color:#7dd3fc}.col-c.open{border-color:rgba(14,165,233,.35)!important}
+    .col-d .sec-num{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff}.col-d .sec-title{color:#c4b5fd}.col-d.open{border-color:rgba(139,92,246,.35)!important}
+    .col-e .sec-num{background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff}.col-e .sec-title{color:#fda4af}.col-e.open{border-color:rgba(244,63,94,.35)!important}
+    .col-f .sec-num{background:linear-gradient(135deg,#10b981,#059669);color:#fff}.col-f .sec-title{color:#6ee7b7}.col-f.open{border-color:rgba(16,185,129,.35)!important}
+
+    /* Stack badges */
+    .jbadge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.3)}
+    .nbadge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(124,58,237,.15);color:#c4b5fd;border:1px solid rgba(124,58,237,.3)}
+
+    /* JWT structure viz */
+    .jwt-parts{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+    @media(min-width:500px){.jwt-parts{flex-direction:row}}
+    .jwt-part{flex:1;border-radius:8px;padding:10px 12px;font-size:10px;line-height:1.6}
+    .jp-head{background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.25)}
+    .jp-body{background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.25)}
+    .jp-sig{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25)}
+    .jp-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+    .jp-head .jp-label{color:#fda4af}
+    .jp-body .jp-label{color:#7dd3fc}
+    .jp-sig .jp-label{color:#fcd34d}
+
+    footer{text-align:center;font-size:10px;color:#1e293b;padding:24px 14px 40px}
+  </style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-in">
+    <div class="logo">🔐</div>
+    <div>
+      <h1>JWT Auth Flow — Java &amp; .NET</h1>
+      <p>Token Creation · Header Reading · Authentication · Authorization</p>
+    </div>
+  </div>
+</div>
+
+<nav class="nav-pills">
+  <a class="np" href="#s1" style="background:rgba(245,158,11,.18);color:#fcd34d;border-color:rgba(245,158,11,.35);">1·JWT Structure</a>
+  <a class="np" href="#s2" style="background:rgba(34,197,94,.16);color:#86efac;border-color:rgba(34,197,94,.32);">2·Token Creation</a>
+  <a class="np" href="#s3" style="background:rgba(14,165,233,.16);color:#7dd3fc;border-color:rgba(14,165,233,.32);">3·Sending Header</a>
+  <a class="np" href="#s4" style="background:rgba(139,92,246,.18);color:#c4b5fd;border-color:rgba(139,92,246,.35);">4·Validation</a>
+  <a class="np" href="#s5" style="background:rgba(244,63,94,.16);color:#fda4af;border-color:rgba(244,63,94,.32);">5·Authorization</a>
+  <a class="np" href="#s6" style="background:rgba(16,185,129,.16);color:#6ee7b7;border-color:rgba(16,185,129,.32);">6·Google OAuth</a>
+</nav>
+
+<div class="page">
+
+  <!-- SHARED SECRET KEY -->
+  <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:var(--r);padding:14px 16px;margin-bottom:6px">
+    <div style="font-size:11px;font-weight:700;color:#fcd34d;margin-bottom:6px">🔑 SHARED SECRET KEY — Both Backends Use the Same Key!</div>
+    <div class="code-box" style="margin:0;background:var(--s1)">"MySecretKeyForJwt123456789012345"  (HS256 — HMAC SHA-256)</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:6px">This means a JWT token generated by the Java backend can be validated by the .NET backend and vice versa.</div>
+  </div>
+
+  <!-- S1: JWT Structure -->
+  <h2>📌 JWT Structure</h2>
+  <div class="sec col-a open" id="s1">
+    <div class="sec-head" onclick="toggle(this)">
+      <div class="sec-num">1</div>
+      <span class="sec-icon">🧬</span>
+      <div class="sec-info">
+        <div class="sec-title">What a JWT Token Looks Like</div>
+        <div class="sec-sub">Header . Payload . Signature — all Base64 encoded</div>
+      </div>
+      <span class="caret">▼</span>
+    </div>
+    <div class="sec-body">
+      <div class="code-box" style="color:#fcd34d;word-break:break-all;white-space:pre-wrap">eyJhbGciOiJIUzI1NiJ9<span style="color:#64748b">.</span>eyJzdWIiOiJ1c2VyQGIuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzA4NTc2MDAwLCJleHAiOjE3MDg2NjI0MDB9<span style="color:#64748b">.</span>aBcDeFgHiJkLmNoPqRsTuVwXyZ1234567890</div>
+      <div class="jwt-parts" style="margin-top:12px">
+        <div class="jwt-part jp-head">
+          <div class="jp-label">Header (red)</div>
+          <code>alg: HS256</code><br/>
+          <code>typ: JWT</code>
+        </div>
+        <div class="jwt-part jp-body">
+          <div class="jp-label">Payload (blue)</div>
+          <code>sub: "user@b.com"</code><br/>
+          <code>role: "CUSTOMER"</code><br/>
+          <code>iat: 1708576000</code><br/>
+          <code>exp: 1708662400</code>
+        </div>
+        <div class="jwt-part jp-sig">
+          <div class="jp-label">Signature (gold)</div>
+          <code>HMACSHA256(</code><br/>
+          <code>&nbsp;base64(hdr)+"."+</code><br/>
+          <code>&nbsp;base64(payload),</code><br/>
+          <code>&nbsp;secretKey)</code>
+        </div>
+      </div>
+      <div class="note">⚑ The payload is NOT encrypted — it's just Base64. Never put passwords in JWT. The signature prevents tampering.</div>
+    </div>
+  </div>
+
+  <!-- S2: TOKEN CREATION -->
+  <h2>🔄 Token Creation Flow (Login)</h2>
+  <div class="sec col-b open" id="s2">
+    <div class="sec-head" onclick="toggle(this)">
+      <div class="sec-num">2</div>
+      <span class="sec-icon">🏭</span>
+      <div class="sec-info">
+        <div class="sec-title">Token Creation on Login</div>
+        <div class="sec-sub">User sends credentials → server generates JWT → returns token</div>
+      </div>
+      <span class="caret">▼</span>
+    </div>
+    <div class="sec-body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;margin-bottom:4px">
+        <span class="jbadge">☕ Java — JwtUtil.java</span>
+      </div>
+      <div class="code-box"><span class="c">// JwtUtil.java</span>
+<span class="k">public</span> String generateToken(String email, String role) {
+  Key key = Keys.hmacShaKeyFor(<span class="v">"MySecretKeyForJwt..."</span>.getBytes());
+  <span class="k">return</span> Jwts.builder()
+    .setSubject(email)       <span class="c">// "sub" claim = email</span>
+    .claim(<span class="v">"role"</span>, role)     <span class="c">// custom claim</span>
+    .setIssuedAt(<span class="m">new</span> Date())
+    .setExpiration(<span class="m">new</span> Date(now + 24h))
+    .signWith(key, HS256)
+    .compact();
+}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;margin-bottom:4px">
+        <span class="nbadge">💠 .NET — JwtService.cs</span>
+      </div>
+      <div class="code-box"><span class="c">// JwtService.cs</span>
+<span class="k">public</span> string GenerateToken(string email, string role) {
+  var claims = <span class="k">new</span>[] {
+    <span class="k">new</span> Claim(<span class="v">"sub"</span>, email),
+    <span class="k">new</span> Claim(<span class="v">"role"</span>, role),
+    <span class="k">new</span> Claim(<span class="v">"iat"</span>, timestamp)
+  };
+  var key   = <span class="k">new</span> SymmetricSecurityKey(Encoding.UTF8.GetBytes(<span class="v">"MySecretKeyForJwt..."</span>));
+  var creds = <span class="k">new</span> SigningCredentials(key, HmacSha256);
+  var token = <span class="k">new</span> JwtSecurityToken(claims:claims, expires: +24h, signingCredentials:creds);
+  <span class="k">return new</span> JwtSecurityTokenHandler().WriteToken(token);
+}</div>
+      <div class="note-green">✅ Both return the JWT as a plain string in the response body: <code>{"token": "eyJ..."}</code></div>
+    </div>
+  </div>
+
+  <!-- S3: SENDING HEADER -->
+  <h2>📤 How Frontend Sends the Token</h2>
+  <div class="sec col-c open" id="s3">
+    <div class="sec-head" onclick="toggle(this)">
+      <div class="sec-num">3</div>
+      <span class="sec-icon">📡</span>
+      <div class="sec-info">
+        <div class="sec-title">Sending Authorization Header</div>
+        <div class="sec-sub">Frontend stores token, attaches as Bearer header on every request</div>
+      </div>
+      <span class="caret">▼</span>
+    </div>
+    <div class="sec-body">
+      <div class="label">Step 1 — After Login: store token</div>
+      <div class="code-box"><span class="c">// Frontend (JavaScript)</span>
+<span class="k">const</span> res = await fetch(<span class="v">'/api/auth/login'</span>, {...});
+<span class="k">const</span> { token } = await res.json();
+localStorage.setItem(<span class="v">'token'</span>, token);  <span class="c">// save to localStorage</span></div>
+      <div class="label">Step 2 — Every Protected Request: send header</div>
+      <div class="code-box"><span class="c">// For every API call that needs auth</span>
+fetch(<span class="v">'/api/bookings/customer/5'</span>, {
+  method: <span class="v">'GET'</span>,
+  headers: {
+    <span class="v">'Authorization'</span>: <span class="v">`Bearer ${localStorage.getItem('token')}`</span>,
+    <span class="v">'Content-Type'</span>: <span class="v">'application/json'</span>
+  }
+})</div>
+      <div class="label">What this looks like in HTTP</div>
+      <div class="code-box">GET /api/bookings/customer/5 HTTP/1.1
+Host: localhost:8080
+<span class="s">Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIi...</span>
+Content-Type: application/json</div>
+      <div class="note">⚑ Format is ALWAYS: <code>Authorization: Bearer &lt;token&gt;</code> — the word "Bearer" then a space then the token string.</div>
+    </div>
+  </div>
+
+  <!-- S4: VALIDATION -->
+  <h2>🔍 How Each Backend Reads & Validates the Header</h2>
+  <div class="sec col-d" id="s4">
+    <div class="sec-head" onclick="toggle(this)">
+      <div class="sec-num">4</div>
+      <span class="sec-icon">🛡️</span>
+      <div class="sec-info">
+        <div class="sec-title">Token Validation</div>
+        <div class="sec-sub">Filter/Middleware reads header, verifies signature & expiry</div>
+      </div>
+      <span class="caret">▼</span>
+    </div>
+    <div class="sec-body">
+      <table class="cmp" style="margin-top:12px">
+        <tr>
+          <th>Step</th>
+          <th>☕ Java (JwtAuthFilter)</th>
+          <th>💠 .NET (JwtMiddleware)</th>
+        </tr>
+        <tr>
+          <td>Read header</td>
+          <td>request.getHeader("Authorization")</td>
+          <td>ctx.Request.Headers["Authorization"]</td>
+        </tr>
+        <tr>
+          <td>Strip "Bearer "</td>
+          <td>header.substring(7)</td>
+          <td>authHeader.Substring(7)</td>
+        </tr>
+        <tr>
+          <td>Validate token</td>
+          <td>jwtUtil.isTokenValid(token)<br/>(JJWT parses + verifies)</td>
+          <td>jwtService.IsTokenValid(token)<br/>(JwtSecurityTokenHandler)</td>
+        </tr>
+        <tr>
+          <td>Extract email</td>
+          <td>jwtUtil.extractUsername(token)<br/>→ getClaims().getSubject()</td>
+          <td>jwtService.ExtractEmail(token)<br/>→ FindFirst("sub")</td>
+        </tr>
+        <tr>
+          <td>Extract role</td>
+          <td>jwtUtil.extractRole(token)<br/>→ getClaims().get("role")</td>
+          <td>jwtService.ExtractRole(token)<br/>→ FindFirst("role")</td>
+        </tr>
+        <tr>
+          <td>Store identity</td>
+          <td>SecurityContextHolder<br/>.setAuthentication(authToken)</td>
+          <td>ctx.Items["UserEmail"] = email<br/>ctx.Items["UserRole"] = role</td>
+        </tr>
+        <tr>
+          <td>Continue pipeline</td>
+          <td>chain.doFilter(req, res)</td>
+          <td>await _next(ctx)</td>
+        </tr>
+      </table>
+      <div class="label" style="margin-top:12px">Java — JwtAuthFilter.java</div>
+      <div class="code-box"><span class="c">// runs on EVERY request (OncePerRequestFilter)</span>
+String header = request.getHeader(<span class="v">"Authorization"</span>);
+<span class="k">if</span> (header != null &amp;&amp; header.startsWith(<span class="v">"Bearer "</span>)) {
+  String token    = header.substring(7);
+  String username = jwtUtil.<span class="m">extractUsername</span>(token);
+  String role     = jwtUtil.<span class="m">extractRole</span>(token);
+  SimpleGrantedAuthority authority =
+    <span class="k">new</span> SimpleGrantedAuthority(<span class="v">"ROLE_"</span> + role);
+  UsernamePasswordAuthenticationToken auth =
+    <span class="k">new</span> UsernamePasswordAuthenticationToken(username, null, List.of(authority));
+  SecurityContextHolder.getContext().<span class="m">setAuthentication</span>(auth);   <span class="c">// ← KEY LINE</span>
+}
+chain.<span class="m">doFilter</span>(request, response);</div>
+      <div class="label">.NET — JwtMiddleware.cs</div>
+      <div class="code-box"><span class="c">// runs on EVERY request (middleware pipeline)</span>
+var authHeader = ctx.Request.Headers[<span class="v">"Authorization"</span>].FirstOrDefault();
+<span class="k">if</span> (authHeader?.StartsWith(<span class="v">"Bearer "</span>) == true) {
+  var token = authHeader.Substring(7);
+  var email = jwtService.<span class="m">ExtractEmail</span>(token);
+  var role  = jwtService.<span class="m">ExtractRole</span>(token);
+  <span class="k">if</span> (email != null &amp;&amp; jwtService.<span class="m">IsTokenValid</span>(token)) {
+    ctx.Items[<span class="v">"UserEmail"</span>] = email;   <span class="c">// ← KEY LINE</span>
+    ctx.Items[<span class="v">"UserRole"</span>]  = role;
+  }
+}
+await _next(ctx);</div>
+      <div class="note-red">❌ If token is missing, expired, or signature mismatch → identity NOT set → controller request will fail on protected routes.</div>
+    </div>
+  </div>
+
+  <!-- S5: AUTHORIZATION -->
+  <h2>🚦 Authorization — How Controllers Use User Identity</h2>
+  <div class="sec col-e" id="s5">
+    <div class="sec-head" onclick="toggle(this)">
+      <div class="sec-num">5</div>
+      <span class="sec-icon">🚦</span>
+      <div class="sec-info">
+        <div class="sec-title">Authorization in Controllers</div>
+        <div class="sec-sub">How role-based access control works in each framework</div>
+      </div>
+      <span class="caret">▼</span>
+    </div>
+    <div class="sec-body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;margin-bottom:4px"><span class="jbadge">☕ Java</span></div>
+      <div class="code-box"><span class="c">// Java — Spring Security reads from SecurityContext</span>
+<span class="k">@GetMapping</span>(<span class="v">"/bookings/{id}"</span>)
+<span class="c">// Optional role restriction:</span>
+<span class="k">@PreAuthorize</span>(<span class="v">"hasRole('CUSTOMER')"</span>)
+<span class="k">public</span> ResponseEntity getBooking(<span class="k">@PathVariable</span> Long id,
+    Authentication auth) {  <span class="c">// ← Spring injects from SecurityContext</span>
+  String email = auth.getName();     <span class="c">// = JWT sub claim</span>
+  String role  = auth.getAuthorities().toString(); <span class="c">// = ROLE_CUSTOMER</span>
+  <span class="k">return</span> ResponseEntity.ok(bookingService.getById(id));
+}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;margin-bottom:4px"><span class="nbadge">💠 .NET</span></div>
+      <div class="code-box"><span class="c">// .NET — reads from HttpContext.Items (set by JwtMiddleware)</span>
+<span class="k">[HttpGet]</span>(<span class="v">"customer/{id}"</span>)
+<span class="k">public async</span> Task&lt;IActionResult&gt; GetByCustomer(<span class="k">int</span> id) {
+  var email = HttpContext.Items[<span class="v">"UserEmail"</span>]?.ToString();
+  var role  = HttpContext.Items[<span class="v">"UserRole"</span>]?.ToString();
+  <span class="c">// optional role check</span>
+  <span class="k">if</span> (role != <span class="v">"CUSTOMER"</span> &amp;&amp; role != <span class="v">"admin"</span>)
+    <span class="k">return</span> Unauthorized();
+  <span class="k">return</span> Ok(await _bookingService.GetByCustomerIdAsync(id));
+}</div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:8px">
+        <table class="cmp" style="margin-top:0">
+          <tr><th>Aspect</th><th>☕ Java</th><th>💠 .NET</th></tr>
+          <tr><td>Identity storage</td><td>SecurityContextHolder</td><td>HttpContext.Items[]</td></tr>
+          <tr><td>User role access</td><td>auth.getAuthorities()</td><td>ctx.Items["UserRole"]</td></tr>
+          <tr><td>Route protection</td><td>@PreAuthorize / .authenticated()</td><td>Manual check in controller</td></tr>
+          <tr><td>Current user email</td><td>auth.getName()</td><td>ctx.Items["UserEmail"]</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6: GOOGLE OAUTH -->
+  <h2>🌐 Google OAuth2 Flow</h2>
+  <div class="sec col-f" id="s6">
+    <div class="sec-head" onclick="toggle(this)">
+      <div class="sec-num">6</div>
+      <span class="sec-icon">🌐</span>
+      <div class="sec-info">
+        <div class="sec-title">Google OAuth2 Login</div>
+        <div class="sec-sub">Google → ID token → backend verifies → issues our JWT</div>
+      </div>
+      <span class="caret">▼</span>
+    </div>
+    <div class="sec-body">
+      <div class="label">Flow</div>
+      <div style="font-size:11px;line-height:2.2;margin-top:6px">
+        <span style="color:#7dd3fc">①</span> User clicks "Sign in with Google" (Google Identity button in browser)<br/>
+        <span style="color:#7dd3fc">②</span> Google returns an <b style="color:#fcd34d">ID Token</b> (JWT from Google) to the frontend<br/>
+        <span style="color:#7dd3fc">③</span> Frontend sends <code>{ idToken: "eyJ..." }</code> to <code>POST /api/auth/google-login</code><br/>
+        <span style="color:#7dd3fc">④</span> Backend verifies the Google ID token against Google's public keys<br/>
+        <span style="color:#7dd3fc">⑤</span> Extracts email from token → checks if user exists in DB → creates if new<br/>
+        <span style="color:#7dd3fc">⑥</span> Generates <b style="color:#86efac">OUR OWN JWT</b> using the same secret key → returns it<br/>
+        <span style="color:#7dd3fc">⑦</span> Frontend uses our JWT for all subsequent requests
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;margin-bottom:4px"><span class="jbadge">☕ Java</span></div>
+      <div class="code-box"><span class="c">// Java — handled by Spring Security OAuth2</span>
+<span class="c">// Route: http://localhost:8080/oauth2/authorization/google</span>
+<span class="c">// Built-in Spring OAuth2 redirects to Google</span>
+<span class="c">// After Google returns → OAuth2SuccessHandler.java fires</span>
+<span class="c">// → gets user email → generate our JWT → send to frontend</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;margin-bottom:4px"><span class="nbadge">💠 .NET</span></div>
+      <div class="code-box"><span class="c">// .NET — manual Google ID Token verification</span>
+<span class="k">[HttpPost]</span>(<span class="v">"google-login"</span>)
+<span class="k">public async</span> Task&lt;IActionResult&gt; GoogleLogin(GoogleLoginRequestDto dto) {
+  <span class="c">// 1. Verify Google's ID token</span>
+  var payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken);
+  <span class="c">// 2. Create/find user in customer_master</span>
+  var token = await _authService.<span class="m">HandleGoogleLoginAsync</span>(dto.IdToken);
+  <span class="c">// 3. Return OUR JWT</span>
+  <span class="k">return</span> Ok(<span class="k">new</span> { token });
+}</div>
+      <div class="note-green">✅ After Google OAuth, frontend gets our app's JWT — all subsequent requests use it the same way as email/password login.</div>
+    </div>
+  </div>
+
+  <!-- FULL FLOW SUMMARY -->
+  <h2>🗺️ Complete JWT Life Cycle</h2>
+  <div style="background:var(--s1);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:16px;font-size:11px;line-height:2.2">
+    <div style="display:grid;gap:4px">
+      <div><span style="color:#64748b">①</span> <b style="color:#7dd3fc">POST /auth/login</b> → Controller → AuthService → verify BCrypt password → <code>jwtUtil.generateToken(email, role)</code></div>
+      <div><span style="color:#64748b">②</span> Response: <b style="color:#fcd34d">{"token": "eyJ..."}</b> → Frontend stores in <code>localStorage</code></div>
+      <div><span style="color:#64748b">③</span> Next request: Frontend adds <b style="color:#86efac">Authorization: Bearer eyJ...</b> header</div>
+      <div><span style="color:#64748b">④</span> <b style="color:#c4b5fd">Java:</b> JwtAuthFilter runs → extracts claims → sets SecurityContext<br/>&nbsp;&nbsp;&nbsp;&nbsp;<b style="color:#c4b5fd">.NET:</b> JwtMiddleware runs → extracts claims → sets HttpContext.Items</div>
+      <div><span style="color:#64748b">⑤</span> Controller reads user identity → calls Service → returns data</div>
+      <div><span style="color:#64748b">⑥</span> After <b style="color:#fda4af">24 hours</b> token expires → frontend gets 401 → user must login again</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>JWT — HS256 · Secret: "MySecretKeyForJwt…" · 24h expiry · Same key on both Java &amp; .NET</footer>
+
+<script>
+  function toggle(h){const s=h.closest('.sec');s.classList.toggle('open')}
+</script>
+</body>
+</html>

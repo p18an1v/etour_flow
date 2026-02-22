@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BackEnd_Java — Request Flow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#080c14;--s1:#0e1420;--s2:#131c2e;--border:rgba(255,255,255,.07);--muted:#64748b;--text:#e2e8f0;--r:12px}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+    code{font-family:'JetBrains Mono',monospace}
+
+    /* HEADER */
+    .hdr{position:sticky;top:0;z-index:50;background:rgba(8,12,20,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:12px 18px}
+    .hdr-in{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:12px}
+    .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .hdr h1{font-size:14px;font-weight:700}
+    .hdr p{font-size:10px;color:var(--muted);margin-top:1px}
+    .nav-pills{display:flex;gap:6px;overflow-x:auto;padding:10px 18px;background:var(--s1);border-bottom:1px solid var(--border);scrollbar-width:none}
+    .nav-pills::-webkit-scrollbar{display:none}
+    .np{flex-shrink:0;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-decoration:none;white-space:nowrap;border:1px solid transparent}
+
+    /* PAGE */
+    .page{max-width:960px;margin:0 auto;padding:20px 14px 60px}
+    h2{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:28px 0 12px}
+
+    /* FLOW TRACK */
+    .track{display:flex;flex-direction:column;gap:0}
+    .layer{border-radius:var(--r);border:1px solid var(--border);background:var(--s1);overflow:hidden;margin-bottom:4px}
+    .layer-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+    .layer-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+    .layer-icon{font-size:17px;flex-shrink:0}
+    .layer-info{flex:1;min-width:0}
+    .layer-title{font-size:13px;font-weight:700}
+    .layer-sub{font-size:10px;color:var(--muted);margin-top:1px}
+    .caret{font-size:10px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+    .open .caret{transform:rotate(180deg)}
+    .layer-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}
+    .layer.open .layer-body{display:block}
+
+    /* CONTENT INSIDE LAYER */
+    .chip{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;margin:2px 2px 0 0}
+    .label{font-size:9px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#334155;margin:12px 0 6px}
+    .code-box{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:10.5px;line-height:1.7;font-family:'JetBrains Mono',monospace;overflow-x:auto}
+    .code-box .c{color:#64748b}
+    .code-box .k{color:#7dd3fc}
+    .code-box .m{color:#86efac}
+    .code-box .s{color:#fcd34d}
+    .code-box .v{color:#f9a8d4}
+    .note{font-size:10px;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);color:#fde68a;border-radius:8px;padding:7px 10px;margin-top:8px;line-height:1.5}
+
+    /* Arrow */
+    .arr{display:flex;justify-content:center;color:#1e3a5f;font-size:22px;margin:2px 0;user-select:none}
+
+    /* COLOURS */
+    .cl1 .layer-num{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff}.cl1 .layer-title{color:#a5b4fc}
+    .cl1.open{border-color:rgba(99,102,241,.35)!important}
+    .cl2 .layer-num{background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff}.cl2 .layer-title{color:#7dd3fc}
+    .cl2.open{border-color:rgba(14,165,233,.35)!important}
+    .cl3 .layer-num{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff}.cl3 .layer-title{color:#c4b5fd}
+    .cl3.open{border-color:rgba(139,92,246,.35)!important}
+    .cl4 .layer-num{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}.cl4 .layer-title{color:#fcd34d}
+    .cl4.open{border-color:rgba(245,158,11,.35)!important}
+    .cl5 .layer-num{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}.cl5 .layer-title{color:#86efac}
+    .cl5.open{border-color:rgba(34,197,94,.35)!important}
+    .cl6 .layer-num{background:linear-gradient(135deg,#10b981,#059669);color:#fff}.cl6 .layer-title{color:#6ee7b7}
+    .cl6.open{border-color:rgba(16,185,129,.35)!important}
+
+    /* TABLE */
+    table{width:100%;border-collapse:collapse;font-size:10px;margin-top:8px}
+    th{text-align:left;color:#334155;font-weight:700;padding:5px 8px;border-bottom:1px solid var(--border);font-size:9px;text-transform:uppercase;letter-spacing:1px}
+    td{padding:5px 8px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,.03)}
+    td:first-child{color:var(--text);font-family:'JetBrains Mono',monospace;font-size:9.5px}
+    td:nth-child(2){color:#a5b4fc;font-family:'JetBrains Mono',monospace;font-size:9px}
+
+    footer{text-align:center;font-size:10px;color:#1e293b;padding:24px 14px 40px}
+  </style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-in">
+    <div class="logo">☕</div>
+    <div>
+      <h1>BackEnd_Java — Request Flow</h1>
+      <p>Spring Boot · Spring Security · JWT · MySQL</p>
+    </div>
+  </div>
+</div>
+
+<nav class="nav-pills">
+  <a class="np" href="#l1" style="background:rgba(99,102,241,.18);color:#a5b4fc;border-color:rgba(99,102,241,.35);">1·HTTP Request</a>
+  <a class="np" href="#l2" style="background:rgba(14,165,233,.16);color:#7dd3fc;border-color:rgba(14,165,233,.32);">2·Security Filter</a>
+  <a class="np" href="#l3" style="background:rgba(139,92,246,.18);color:#c4b5fd;border-color:rgba(139,92,246,.35);">3·JWT Filter</a>
+  <a class="np" href="#l4" style="background:rgba(245,158,11,.16);color:#fcd34d;border-color:rgba(245,158,11,.32);">4·Controller</a>
+  <a class="np" href="#l5" style="background:rgba(34,197,94,.16);color:#86efac;border-color:rgba(34,197,94,.32);">5·Service</a>
+  <a class="np" href="#l6" style="background:rgba(16,185,129,.16);color:#6ee7b7;border-color:rgba(16,185,129,.32);">6·Repository/DB</a>
+</nav>
+
+<div class="page">
+
+  <!-- OVERVIEW BOX -->
+  <h2>📌 Stack Overview</h2>
+  <div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:6px">
+    <table>
+      <tr><th>Layer</th><th>Class / File</th><th>Role</th></tr>
+      <tr><td>Security Config</td><td>SecurityConfig.java</td><td style="color:var(--muted)">Declares filter chain, public vs protected routes</td></tr>
+      <tr><td>JWT Filter</td><td>JwtAuthFilter.java</td><td style="color:var(--muted)">Reads Authorization header, validates JWT, sets SecurityContext</td></tr>
+      <tr><td>JWT Utility</td><td>JwtUtil.java</td><td style="color:var(--muted)">generateToken / extractUsername / extractRole</td></tr>
+      <tr><td>Auth Controller</td><td>AuthController.java → /auth/**</td><td style="color:var(--muted)">Register, Login, Forgot/Reset Password</td></tr>
+      <tr><td>Auth Service</td><td>AuthService.java</td><td style="color:var(--muted)">Business logic for auth, password hash, token generation</td></tr>
+      <tr><td>Other Controllers</td><td>TourController, BookingController…</td><td style="color:var(--muted)">Protected routes — need valid JWT</td></tr>
+      <tr><td>Repository</td><td>*Repository.java (Spring Data JPA)</td><td style="color:var(--muted)">SQL queries via JPA to MySQL</td></tr>
+    </table>
+  </div>
+
+  <h2>🔄 Request Journey — Layer by Layer</h2>
+  <div class="track">
+
+    <!-- L1 -->
+    <div class="layer cl1 open" id="l1">
+      <div class="layer-head" onclick="toggle(this)">
+        <div class="layer-num">1</div>
+        <span class="layer-icon">🌐</span>
+        <div class="layer-info">
+          <div class="layer-title">HTTP Request arrives</div>
+          <div class="layer-sub">Frontend sends JSON to localhost:8080</div>
+        </div>
+        <span class="caret">▼</span>
+      </div>
+      <div class="layer-body">
+        <div class="label">Example Requests</div>
+        <div class="code-box">
+<span class="c">// LOGIN</span>
+<span class="k">POST</span> /auth/login
+<span class="s">Authorization:</span> (none — public route)
+<span class="s">Content-Type:</span> application/json
+{ <span class="v">"email"</span>: "a@b.com", <span class="v">"password"</span>: "pass123" }
+
+<span class="c">// GET TOURS (protected)</span>
+<span class="k">GET</span> /api/tours
+<span class="s">Authorization:</span> Bearer eyJhbGci...
+        </div>
+        <div class="note">ℹ️ CORS is handled by <code>CorsConfig.java</code> (allowedOrigins, allowedMethods) before this reaches Spring Security.</div>
+      </div>
+    </div>
+
+    <div class="arr">↓</div>
+
+    <!-- L2 -->
+    <div class="layer cl2" id="l2">
+      <div class="layer-head" onclick="toggle(this)">
+        <div class="layer-num">2</div>
+        <span class="layer-icon">🛡️</span>
+        <div class="layer-info">
+          <div class="layer-title">Spring SecurityFilterChain</div>
+          <div class="layer-sub">SecurityConfig.java — decides public vs protected</div>
+        </div>
+        <span class="caret">▼</span>
+      </div>
+      <div class="layer-body">
+        <div class="label">SecurityConfig.java → filterChain()</div>
+        <div class="code-box">
+<span class="c">// PUBLIC — no token needed</span>
+.requestMatchers(<span class="v">"/auth/**"</span>).permitAll()
+.anyRequest().permitAll() <span class="c">// (currently all open)</span>
+
+<span class="c">// STATELESS — no sessions</span>
+.sessionManagement(sess -> sess
+  .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+<span class="c">// JWT filter runs BEFORE UsernamePasswordAuthenticationFilter</span>
+.addFilterBefore(<span class="m">jwtFilter</span>, UsernamePasswordAuthenticationFilter.class)
+
+<span class="c">// GOOGLE OAuth2 supported</span>
+.oauth2Login(oauth -> oauth
+  .successHandler(<span class="m">oAuth2SuccessHandler</span>))
+        </div>
+      </div>
+    </div>
+
+    <div class="arr">↓</div>
+
+    <!-- L3 -->
+    <div class="layer cl3" id="l3">
+      <div class="layer-head" onclick="toggle(this)">
+        <div class="layer-num">3</div>
+        <span class="layer-icon">🔑</span>
+        <div class="layer-info">
+          <div class="layer-title">JwtAuthFilter.java</div>
+          <div class="layer-sub">Reads header → validates token → sets SecurityContext</div>
+        </div>
+        <span class="caret">▼</span>
+      </div>
+      <div class="layer-body">
+        <div class="label">JwtAuthFilter → doFilterInternal()</div>
+        <div class="code-box">
+<span class="c">// 1. Read header</span>
+String header = request.getHeader(<span class="v">"Authorization"</span>);
+
+<span class="c">// 2. Extract token (remove "Bearer ")</span>
+<span class="k">if</span> (header != null &amp;&amp; header.startsWith(<span class="v">"Bearer "</span>)) {
+  String token = header.substring(7);
+
+  <span class="c">// 3. Extract claims via JwtUtil</span>
+  String username = jwtUtil.<span class="m">extractUsername</span>(token);
+  String role     = jwtUtil.<span class="m">extractRole</span>(token);
+
+  <span class="c">// 4. Set authentication in SecurityContext</span>
+  SimpleGrantedAuthority auth = new SimpleGrantedAuthority(<span class="v">"ROLE_"</span> + role);
+  UsernamePasswordAuthenticationToken authToken =
+    new UsernamePasswordAuthenticationToken(username, null, List.of(auth));
+  SecurityContextHolder.getContext().<span class="m">setAuthentication</span>(authToken);
+}
+
+chain.<span class="m">doFilter</span>(request, response); <span class="c">// pass to next filter/controller</span>
+        </div>
+        <div class="note">⚑ If no token or invalid token → SecurityContext stays null → controller still runs (currently all routes open). When you enable <code>.anyRequest().authenticated()</code> Spring will return 403 automatically.</div>
+      </div>
+    </div>
+
+    <div class="arr">↓</div>
+
+    <!-- L4 -->
+    <div class="layer cl4" id="l4">
+      <div class="layer-head" onclick="toggle(this)">
+        <div class="layer-num">4</div>
+        <span class="layer-icon">🎮</span>
+        <div class="layer-info">
+          <div class="layer-title">Controller Layer</div>
+          <div class="layer-sub">@RestController — maps HTTP method + path</div>
+        </div>
+        <span class="caret">▼</span>
+      </div>
+      <div class="layer-body">
+        <div class="label">All Controllers</div>
+        <table>
+          <tr><th>Controller</th><th>Route</th><th>Key Methods</th></tr>
+          <tr><td>AuthController</td><td>/auth/**</td><td style="color:var(--muted)">register, login, forgotPassword, resetPassword</td></tr>
+          <tr><td>TourController</td><td>/api/tours/**</td><td style="color:var(--muted)">getTours, getTourById, getScheduledTours</td></tr>
+          <tr><td>CategoryController</td><td>/api/categories/**</td><td style="color:var(--muted)">getAll, getSubCategories</td></tr>
+          <tr><td>BookingController</td><td>/api/bookings/**</td><td style="color:var(--muted)">createBooking, getByCustomer</td></tr>
+          <tr><td>PassengerController</td><td>/api/passengers/**</td><td style="color:var(--muted)">addPassenger, getByBooking</td></tr>
+          <tr><td>PaymentController</td><td>/api/payments/**</td><td style="color:var(--muted)">createPayment, getByBooking</td></tr>
+          <tr><td>SearchController</td><td>/api/search/**</td><td style="color:var(--muted)">searchTours</td></tr>
+        </table>
+        <div class="label" style="margin-top:12px">AuthController.java — login method</div>
+        <div class="code-box">
+<span class="k">@PostMapping</span>(<span class="v">"/login"</span>)
+ResponseEntity login(<span class="k">@RequestBody</span> LoginDTO dto) {
+  String token = authService.<span class="m">login</span>(dto);  <span class="c">// calls Service</span>
+  Map response = new HashMap();
+  response.put(<span class="v">"token"</span>, token);
+  <span class="k">return</span> ResponseEntity.ok(response);  <span class="c">// 200 {token:...}</span>
+}
+        </div>
+      </div>
+    </div>
+
+    <div class="arr">↓</div>
+
+    <!-- L5 -->
+    <div class="layer cl5" id="l5">
+      <div class="layer-head" onclick="toggle(this)">
+        <div class="layer-num">5</div>
+        <span class="layer-icon">⚙️</span>
+        <div class="layer-info">
+          <div class="layer-title">Service Layer</div>
+          <div class="layer-sub">Business logic — validation, password, JWT generation</div>
+        </div>
+        <span class="caret">▼</span>
+      </div>
+      <div class="layer-body">
+        <div class="label">AuthService.java — login()</div>
+        <div class="code-box">
+<span class="k">public</span> String login(LoginDTO dto) {
+  <span class="c">// 1. Find customer by email from DB</span>
+  CustomerModel c = customerRepo.<span class="m">findByEmail</span>(dto.getEmail());
+
+  <span class="c">// 2. Check BCrypt password</span>
+  BCryptPasswordEncoder.<span class="m">matches</span>(dto.getPassword(), c.getPassword());
+
+  <span class="c">// 3. Generate JWT token</span>
+  <span class="k">return</span> jwtUtil.<span class="m">generateToken</span>(c.getEmail(), c.getRole());
+  <span class="c">// → "eyJhbGci....(JWT string)"</span>
+}
+        </div>
+        <div class="label">JwtUtil.java — generateToken()</div>
+        <div class="code-box">
+<span class="k">private final</span> Key secretKey = Keys.hmacShaKeyFor(
+  <span class="v">"MySecretKeyForJwt123456789012345"</span>.getBytes());
+
+Jwts.builder()
+  .setSubject(email)          <span class="c">// sub claim = email</span>
+  .claim(<span class="v">"role"</span>, role)          <span class="c">// custom claim</span>
+  .setIssuedAt(new Date())
+  .setExpiration(+24h)
+  .signWith(secretKey, HS256)
+  .compact();                  <span class="c">// returns JWT string</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arr">↓</div>
+
+    <!-- L6 -->
+    <div class="layer cl6" id="l6">
+      <div class="layer-head" onclick="toggle(this)">
+        <div class="layer-num">6</div>
+        <span class="layer-icon">🗄️</span>
+        <div class="layer-info">
+          <div class="layer-title">Repository → MySQL DB</div>
+          <div class="layer-sub">Spring Data JPA — auto-generates SQL</div>
+        </div>
+        <span class="caret">▼</span>
+      </div>
+      <div class="layer-body">
+        <div class="label">Repositories</div>
+        <table>
+          <tr><th>Repository</th><th>Entity</th><th>DB Table</th></tr>
+          <tr><td>CustomerRepository</td><td>CustomerModel</td><td style="color:var(--muted)">customer_master</td></tr>
+          <tr><td>TourRepository</td><td>TourMaster</td><td style="color:var(--muted)">tour_master</td></tr>
+          <tr><td>BookingRepository</td><td>BookingHeader</td><td style="color:var(--muted)">booking_header</td></tr>
+          <tr><td>PassengerRepository</td><td>Passenger</td><td style="color:var(--muted)">passenger</td></tr>
+          <tr><td>PaymentRepository</td><td>PaymentMaster</td><td style="color:var(--muted)">payment_master</td></tr>
+          <tr><td>CategoryRepository</td><td>CategoryMaster</td><td style="color:var(--muted)">category_master</td></tr>
+        </table>
+        <div class="note">ℹ️ Service gets result → returns to Controller → Controller wraps in ResponseEntity → sent as JSON to frontend</div>
+      </div>
+    </div>
+
+  </div><!-- /track -->
+
+  <!-- RESPONSE PATH -->
+  <h2>↩️ Response Journey (reverse)</h2>
+  <div style="background:var(--s1);border:1px solid rgba(34,197,94,.25);border-radius:var(--r);padding:14px 16px;font-size:11px;line-height:2">
+    <span style="color:#86efac">MySQL</span>
+    <span style="color:#334155"> → </span>
+    <span style="color:#86efac">Repository</span>
+    <span style="color:#334155"> → returns Entity/List → </span>
+    <span style="color:#6ee7b7">Service</span>
+    <span style="color:#334155"> → maps to DTO → </span>
+    <span style="color:#fcd34d">Controller</span>
+    <span style="color:#334155"> → wraps in <code style="color:#a5b4fc">ResponseEntity.ok(dto)</code> → </span>
+    <span style="color:#7dd3fc">Jackson</span>
+    <span style="color:#334155"> → serializes to JSON → </span>
+    <span style="color:#c4b5fd">HTTP 200 response</span>
+    <span style="color:#334155"> → </span>
+    <span style="color:#fda4af">Frontend</span>
+  </div>
+
+</div>
+
+<footer>BackEnd_Java · Spring Boot · Spring Security · JJWT · Spring Data JPA</footer>
+
+<script>
+  function toggle(h){const l=h.closest('.layer');l.classList.toggle('open')}
+</script>
+</body>
+</html>
