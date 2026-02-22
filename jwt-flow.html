@@ -1,362 +1,414 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JWT Auth — Simply Explained</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:#080c14;color:#e2e8f0;min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:60px}
-    code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px}
-    .nav{background:#0a0f1c;border-bottom:1px solid rgba(255,255,255,.07);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
-    .back{font-size:12px;color:#64748b;text-decoration:none}
-    .nav-title{font-size:13px;font-weight:700;color:#fcd34d}
-    .nav-sub{font-size:10px;color:#334155;margin-left:auto}
-    .page{max-width:680px;margin:0 auto;padding:20px 14px}
-    .intro{background:#0e1420;border:1px solid rgba(245,158,11,.2);border-radius:14px;padding:18px;margin-bottom:20px}
-    .intro h2{font-size:17px;font-weight:800;color:#fcd34d;margin-bottom:8px}
-    .intro p{font-size:12px;color:#94a3b8;line-height:1.7}
-    .secret-box{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:14px 16px;margin-bottom:20px;text-align:center}
-    .secret-box .label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#78350f;margin-bottom:8px}
-    .secret-box .key{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#fcd34d;word-break:break-all}
-    .secret-box p{font-size:10px;color:#713f12;margin-top:6px}
-
-    .step{margin-bottom:8px;border-radius:14px;border:1px solid rgba(255,255,255,.07);background:#0e1420;overflow:hidden}
-    .step.open{border-color:rgba(245,158,11,.3)}
-    .step-btn{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;width:100%;background:none;border:none;color:inherit;text-align:left}
-    .num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
-    .step-icon{font-size:20px;flex-shrink:0}
-    .step-text{flex:1}
-    .step-title{font-size:13px;font-weight:700}
-    .step-hint{font-size:10px;color:#64748b;margin-top:2px}
-    .caret{color:#334155;transition:transform .2s;flex-shrink:0}
-    .open .caret{transform:rotate(180deg)}
-    .step-body{display:none;padding:0 16px 16px;border-top:1px solid rgba(255,255,255,.05)}
-    .eli5{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:11px 13px;font-size:11px;color:#fde68a;line-height:1.6;margin-top:12px}
-    .eli5 strong{font-weight:700}
-    .code-block{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:11px 13px;font-size:10.5px;font-family:'JetBrains Mono',monospace;line-height:1.75;overflow-x:auto;margin-top:10px;white-space:pre}
-    .lbl{font-size:9px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#334155;margin:13px 0 7px}
-    .green-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:10px 12px;font-size:10.5px;color:#86efac;margin-top:10px;line-height:1.6}
-    .red-box{background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.2);border-radius:9px;padding:10px 12px;font-size:10.5px;color:#fda4af;margin-top:10px;line-height:1.6}
-
-    /* JWT visual */
-    .jwt-visual{display:flex;flex-direction:column;gap:6px;margin:12px 0}
-    .jwt-part{border-radius:9px;padding:10px 12px;font-size:11px;line-height:1.6}
-    .jp-h{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.25)}.jp-h .jlbl{color:#fda4af}
-    .jp-p{background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25)}.jp-p .jlbl{color:#7dd3fc}
-    .jp-s{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25)}.jp-s .jlbl{color:#fcd34d}
-    .jlbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-
-    /* Side-by-side compare */
-    .cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-    .cmp-box{border-radius:9px;padding:10px 12px;font-size:10px;line-height:1.7;font-family:'JetBrains Mono',monospace}
-    .cmp-j{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2)}
-    .cmp-n{background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.2)}
-    .cmp-lbl{font-size:9px;font-weight:700;text-transform:uppercase;margin-bottom:6px}
-    .cmp-j .cmp-lbl{color:#86efac}
-    .cmp-n .cmp-lbl{color:#c4b5fd}
-    .cmp-j pre,.cmp-n pre{color:#94a3b8;white-space:pre-wrap;word-break:break-all}
-
-    /* num colours */
-    .n1 .num{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}.n1 .step-title{color:#fcd34d}
-    .n2 .num{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}.n2 .step-title{color:#86efac}
-    .n3 .num{background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff}.n3 .step-title{color:#7dd3fc}
-    .n4 .num{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff}.n4 .step-title{color:#c4b5fd}
-    .n5 .num{background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff}.n5 .step-title{color:#fda4af}
-    .n6 .num{background:linear-gradient(135deg,#10b981,#059669);color:#fff}.n6 .step-title{color:#6ee7b7}
-    .n7 .num{background:linear-gradient(135deg,#64748b,#475569);color:#fff}.n7 .step-title{color:#94a3b8}
-
-    .cmt{color:#334155}.key{color:#7dd3fc}.fn{color:#86efac}.str{color:#fcd34d}.val{color:#f9a8d4}
-    footer{text-align:center;font-size:10px;color:#1e293b;padding:24px 14px}
-  </style>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>JWT Auth — Full Explanation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#080c14;color:#e2e8f0;min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:60px}
+code{font-family:'JetBrains Mono',monospace;font-size:.88em;background:rgba(255,255,255,.09);padding:1px 5px;border-radius:4px}
+.nav{background:#0a0f1c;border-bottom:1px solid rgba(255,255,255,.07);padding:11px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
+.back{font-size:12px;color:#64748b;text-decoration:none}
+.nav-title{font-size:13px;font-weight:700;color:#fcd34d}
+.nav-hint{font-size:10px;color:#334155;margin-left:auto}
+.pills{display:flex;gap:6px;overflow-x:auto;padding:9px 14px;background:#0a0f1c;border-bottom:1px solid rgba(255,255,255,.06);scrollbar-width:none}
+.pills::-webkit-scrollbar{display:none}
+.pill{flex-shrink:0;font-size:10px;font-weight:700;padding:4px 11px;border-radius:20px;text-decoration:none;white-space:nowrap;border:1px solid transparent}
+.page{max-width:720px;margin:0 auto;padding:18px 14px}
+.intro{background:#0e1420;border:1px solid rgba(245,158,11,.25);border-radius:14px;padding:16px;margin-bottom:16px}
+.intro h2{font-size:15px;font-weight:800;color:#fcd34d;margin-bottom:6px}
+.intro p{font-size:12px;color:#94a3b8;line-height:1.7}
+.secret-box{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:13px 15px;margin-bottom:14px;text-align:center}
+.secret-box .slbl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#78350f;margin-bottom:7px}
+.secret-box .skey{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#fcd34d;word-break:break-all}
+.secret-box p{font-size:10px;color:#92400e;margin-top:5px}
+.step{margin-bottom:5px;border-radius:14px;border:1px solid rgba(255,255,255,.07);background:#0e1420;overflow:hidden}
+.step.open{border-color:var(--sc,rgba(245,158,11,.3))}
+.step-btn{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;width:100%;background:none;border:none;color:inherit;text-align:left}
+.num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.sico{font-size:19px;flex-shrink:0}
+.si{flex:1;min-width:0}.st{font-size:13px;font-weight:700}.ss{font-size:10px;color:#64748b;margin-top:2px}
+.caret{color:#334155;font-size:12px;transition:transform .2s;flex-shrink:0}
+.open .caret{transform:rotate(180deg)}
+.sb{display:none;padding:0 16px 16px;border-top:1px solid rgba(255,255,255,.05)}
+.open .sb{display:block}
+.eli5{border-radius:10px;padding:10px 13px;font-size:11px;line-height:1.65;margin-top:12px}
+.lbl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#334155;margin:13px 0 6px}
+.cb{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:11px 13px;font-size:10.5px;font-family:'JetBrains Mono',monospace;line-height:1.75;overflow-x:auto;white-space:pre}
+.warn{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:9px;padding:10px 12px;font-size:10.5px;color:#fde68a;margin-top:8px;line-height:1.6}
+.ok{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:10px 12px;font-size:10.5px;color:#86efac;margin-top:8px;line-height:1.6}
+.info{background:rgba(14,165,233,.07);border:1px solid rgba(14,165,233,.2);border-radius:9px;padding:10px 12px;font-size:10.5px;color:#7dd3fc;margin-top:8px;line-height:1.6}
+.tblw{background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:9px;overflow:hidden;margin-top:0}
+.tbl{width:100%;border-collapse:collapse;font-size:10px}
+.tbl th{text-align:left;padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.08);font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:700;color:#334155}
+.tbl td{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.03);color:#94a3b8;vertical-align:top;line-height:1.5}
+.tbl td:first-child{color:#e2e8f0;font-size:9.5px}
+/* JWT visual parts */
+.jpart{border-radius:9px;padding:10px 12px;font-size:11px;line-height:1.6;margin-top:6px}
+.jp-h{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.25)}.jp-h .jlbl{color:#fda4af}
+.jp-p{background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25)}.jp-p .jlbl{color:#7dd3fc}
+.jp-s{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25)}.jp-s .jlbl{color:#fcd34d}
+.jlbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+/* side compare */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.cmp-box{border-radius:9px;padding:10px 12px;font-size:10px;line-height:1.7}
+.cmp-j{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2)}
+.cmp-n{background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.2)}
+.cmp-lbl{font-size:9px;font-weight:700;text-transform:uppercase;margin-bottom:5px}
+.cmp-j .cmp-lbl{color:#86efac}.cmp-n .cmp-lbl{color:#c4b5fd}
+.cmp-j pre,.cmp-n pre{color:#94a3b8;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace}
+/* step colours */
+.n1{--sc:rgba(245,158,11,.35)}.n1 .num{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}.n1 .st{color:#fcd34d}.n1 .eli5{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:#fde68a}
+.n2{--sc:rgba(34,197,94,.35)}.n2 .num{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}.n2 .st{color:#86efac}.n2 .eli5{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:#86efac}
+.n3{--sc:rgba(14,165,233,.35)}.n3 .num{background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff}.n3 .st{color:#7dd3fc}.n3 .eli5{background:rgba(14,165,233,.07);border:1px solid rgba(14,165,233,.2);color:#7dd3fc}
+.n4{--sc:rgba(139,92,246,.35)}.n4 .num{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff}.n4 .st{color:#c4b5fd}.n4 .eli5{background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.2);color:#c4b5fd}
+.n5{--sc:rgba(244,63,94,.35)}.n5 .num{background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff}.n5 .st{color:#fda4af}.n5 .eli5{background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.2);color:#fda4af}
+.n6{--sc:rgba(16,185,129,.35)}.n6 .num{background:linear-gradient(135deg,#10b981,#059669);color:#fff}.n6 .st{color:#6ee7b7}.n6 .eli5{background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);color:#6ee7b7}
+.n7{--sc:rgba(100,116,139,.35)}.n7 .num{background:linear-gradient(135deg,#64748b,#475569);color:#fff}.n7 .st{color:#94a3b8}.n7 .eli5{background:rgba(100,116,139,.07);border:1px solid rgba(100,116,139,.2);color:#94a3b8}
+.cmt{color:#374151}.key{color:#7dd3fc}.fn{color:#86efac}.str{color:#fcd34d}.ann{color:#fb923c}.typ{color:#c4b5fd}
+footer{text-align:center;font-size:10px;color:#1e293b;padding:22px 14px}
+</style>
 </head>
 <body>
-
 <nav class="nav">
   <a class="back" href="index.html">← Home</a>
-  <span class="nav-title">🔑 JWT Auth Flow</span>
-  <span class="nav-sub">Tap a step to expand</span>
+  <span class="nav-title">🔑 JWT Auth — Full Explanation</span>
+  <span class="nav-hint">Tap to expand</span>
 </nav>
+<div class="pills">
+  <a class="pill" href="#n1" style="background:rgba(245,158,11,.16);color:#fcd34d;border-color:rgba(245,158,11,.32)">1·What is JWT</a>
+  <a class="pill" href="#n2" style="background:rgba(34,197,94,.16);color:#86efac;border-color:rgba(34,197,94,.32)">2·Creation</a>
+  <a class="pill" href="#n3" style="background:rgba(14,165,233,.16);color:#7dd3fc;border-color:rgba(14,165,233,.32)">3·Send Token</a>
+  <a class="pill" href="#n4" style="background:rgba(139,92,246,.18);color:#c4b5fd;border-color:rgba(139,92,246,.35)">4·Validation</a>
+  <a class="pill" href="#n5" style="background:rgba(244,63,94,.18);color:#fda4af;border-color:rgba(244,63,94,.35)">5·Authorization</a>
+  <a class="pill" href="#n6" style="background:rgba(16,185,129,.16);color:#6ee7b7;border-color:rgba(16,185,129,.32)">6·Expiry</a>
+  <a class="pill" href="#n7" style="background:rgba(100,116,139,.18);color:#94a3b8;border-color:rgba(100,116,139,.32)">7·Google OAuth</a>
+</div>
 
 <div class="page">
+<div class="intro">
+  <h2>🤔 What is JWT and why stateless?</h2>
+  <p>JWT = <b>JSON Web Token</b>. After login, the server gives you a signed "ticket". Every future request includes this ticket — the server trusts it without checking the database again. This is <b>stateless</b> — no session stored server-side. Both Java and .NET backends use the <b>exact same secret key and algorithm</b>, making tokens interoperable.</p>
+</div>
 
-  <div class="intro">
-    <h2>🤔 What is JWT and why do we use it?</h2>
-    <p>JWT = <strong>JSON Web Token</strong>. After you log in, the server gives you a special ticket (JWT). Every time you make a request, you show that ticket. The server trusts it without checking the database again — it's <strong>stateless</strong>.</p>
-  </div>
+<div class="secret-box">
+  <div class="slbl">🔑 Shared Secret Key — both backends use this identical string</div>
+  <div class="skey">"MySecretKeyForJwt123456789012345"</div>
+  <p>Algorithm: HS256 &nbsp;·&nbsp; A token made by Java can be verified by .NET and vice versa</p>
+</div>
 
-  <div class="secret-box">
-    <div class="label">🔑 Shared Secret Key (both Java &amp; .NET use the same!)</div>
-    <div class="key">"MySecretKeyForJwt123456789012345"</div>
-    <p>Because the key is the same, a token created by Java can be read by .NET and vice versa</p>
-  </div>
+<!-- AUTH vs AUTHZ terminology -->
+<div style="background:#0e1420;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px 15px;margin-bottom:14px;font-size:11px;line-height:2">
+  <b style="color:#fcd34d">Authentication</b> <span style="color:#64748b">= "Who are you?"</span> → Is the JWT token valid + not expired?<br/>
+  <b style="color:#86efac">Authorization</b> <span style="color:#64748b">= "What are you ALLOWED to do?"</span> → Does your role permit this action?
+</div>
 
-  <!-- STEP 1: Structure -->
-  <div class="step n1 open">
-    <button class="step-btn" onclick="tog(this)">
-      <div class="num">1</div>
-      <span class="step-icon">🧬</span>
-      <div class="step-text">
-        <div class="step-title">What does a JWT look like?</div>
-        <div class="step-hint">3 parts joined by dots — Header.Payload.Signature</div>
-      </div>
-      <span class="caret">▼</span>
-    </button>
-    <div class="step-body">
-      <div class="eli5"><strong>Analogy:</strong> Think of a JWT like a sealed envelope with your name written outside. Anyone can read the name (payload), but only the post office (server) can create the official seal (signature) — and that seal proves it wasn't tampered with.</div>
-      <div style="background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:11px 13px;margin-top:12px;font-size:10px;font-family:'JetBrains Mono',monospace;word-break:break-all;line-height:1.7">
-        <span style="color:#fda4af">eyJhbGciOiJIUzI1NiJ9</span><span style="color:#334155">.</span><span style="color:#7dd3fc">eyJzdWIiOiJ1c2VyQGIuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiZXhwIjoxNzM0MDAwMDAwfQ</span><span style="color:#334155">.</span><span style="color:#fcd34d">aBcDeFg...signature</span>
-      </div>
-      <div class="jwt-visual">
-        <div class="jwt-part jp-h">
-          <div class="jlbl">🔴 Part 1 — Header (red)</div>
-          Algorithm used: <strong>HS256</strong><br/>Type: <strong>JWT</strong>
-        </div>
-        <div class="jwt-part jp-p">
-          <div class="jlbl">🔵 Part 2 — Payload (blue) = the data</div>
-          <code>sub</code> = user's email (who they are)<br/>
-          <code>role</code> = CUSTOMER or admin<br/>
-          <code>iat</code> = when token was created<br/>
-          <code>exp</code> = when token expires ← <strong>24 hours</strong>
-        </div>
-        <div class="jwt-part jp-s">
-          <div class="jlbl">🟡 Part 3 — Signature (gold)</div>
-          HMAC-SHA256 of (Header + Payload) using the secret key.<br/>
-          <strong>If anyone changes the payload, this signature breaks!</strong>
-        </div>
-      </div>
-      <div class="red-box">⚠️ The payload is NOT encrypted — it's just Base64 encoded. Anyone can decode and read it. Never put passwords in JWT!</div>
+<!-- N1 -->
+<div class="step n1 open" id="n1">
+  <button class="step-btn" onclick="tog(this)">
+    <div class="num">1</div><span class="sico">🧬</span>
+    <div class="si"><div class="st">JWT Structure — 3 parts</div><div class="ss">Header.Payload.Signature — separated by dots</div></div>
+    <span class="caret">▼</span>
+  </button>
+  <div class="sb">
+    <div class="eli5"><b>Analogy:</b> A JWT is like a sealed envelope with your name written outside. Anyone can read the name on the envelope (payload). But only the post office (server) created the official wax seal (signature). If anyone tampers with the name, the seal breaks and is rejected.</div>
+    <div class="lbl">Real JWT example — paste into jwt.io to decode</div>
+    <div class="cb" style="word-break:break-all;white-space:pre-wrap"><span style="color:#fda4af">eyJhbGciOiJIUzI1NiJ9</span>.<span style="color:#7dd3fc">eyJzdWIiOiJ1c2VyQGIuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzA4MzUyMDAwLCJleHAiOjE3MDg0Mzg0MDB9</span>.<span style="color:#fcd34d">aBcDeFgHiJk_signature_here</span></div>
+    <div class="jpart jp-h">
+      <div class="jlbl">🔴 Part 1 — Header (red above)</div>
+      Algorithm: <b>HS256</b> (HMAC-SHA256) &nbsp;·&nbsp; Type: <b>JWT</b><br/>
+      Decoded: <code>{"alg":"HS256","typ":"JWT"}</code>
     </div>
+    <div class="jpart jp-p">
+      <div class="jlbl">🔵 Part 2 — Payload (blue above) = the data inside the token</div>
+      <code>sub</code> = user's email (who they are — "subject")<br/>
+      <code>role</code> = CUSTOMER or admin (custom claim we added)<br/>
+      <code>iat</code> = issued-at timestamp (when created)<br/>
+      <code>exp</code> = expiry timestamp (24 hours after creation)<br/>
+      <code>type</code> = only on reset tokens — value: "RESET_PASSWORD"
+    </div>
+    <div class="jpart jp-s">
+      <div class="jlbl">🟡 Part 3 — Signature (gold above)</div>
+      = HMAC-SHA256(<code>Base64(header) + "." + Base64(payload)</code>, secretKey)<br/>
+      <b>If anyone changes even 1 character of the payload, this signature no longer matches → token rejected!</b>
+    </div>
+    <div class="warn">⚠️ The payload is Base64 encoded, NOT encrypted. Anyone can decode and read the email and role. Never put passwords or secrets inside a JWT payload!</div>
   </div>
+</div>
 
-  <!-- STEP 2: Token Creation -->
-  <div class="step n2">
-    <button class="step-btn" onclick="tog(this)">
-      <div class="num">2</div>
-      <span class="step-icon">🏭</span>
-      <div class="step-text">
-        <div class="step-title">Token Creation — on Login</div>
-        <div class="step-hint">After verifying credentials, the server builds the JWT</div>
-      </div>
-      <span class="caret">▼</span>
-    </button>
-    <div class="step-body">
-      <div class="eli5"><strong>After the server checks your password is correct</strong>, it creates a JWT with your email and role inside, signs it with the secret key, and sends it back. You keep this token and use it for all future requests.</div>
-      <div class="cmp">
-        <div class="cmp-box cmp-j">
-          <div class="cmp-lbl">☕ Java — JwtUtil.java</div>
-          <pre>Jwts.builder()
+<!-- N2 -->
+<div class="step n2" id="n2">
+  <button class="step-btn" onclick="tog(this)">
+    <div class="num">2</div><span class="sico">🏭</span>
+    <div class="si"><div class="st">Token Creation — at Login</div><div class="ss">After password verified → server builds and signs JWT</div></div>
+    <span class="caret">▼</span>
+  </button>
+  <div class="sb">
+    <div class="eli5"><b>After the server confirms your password is correct</b>, it creates a JWT: puts your email + role inside, sets an expiry time, and signs it with the secret key. You receive this token and store it. You will use it for every future protected request.</div>
+    <div class="lbl">Side-by-side: Java vs .NET token generation</div>
+    <div class="cmp">
+      <div class="cmp-box cmp-j">
+        <div class="cmp-lbl">☕ Java — JwtUtil.java</div>
+        <pre>Jwts.builder()
   .setSubject(email)
   .claim("role", role)
-  .setExpiration(+24h)
-  .signWith(key, HS256)
+  .setIssuedAt(new Date())
+  .setExpiration(
+    new Date(now + 86400000))
+  .signWith(secretKey, HS256)
   .compact();</pre>
-        </div>
-        <div class="cmp-box cmp-n">
-          <div class="cmp-lbl">💠 .NET — JwtService.cs</div>
-          <pre>new JwtSecurityToken(
-  claims: [sub,role],
-  expires: +24h,
-  signingCredentials: creds
+      </div>
+      <div class="cmp-box cmp-n">
+        <div class="cmp-lbl">💠 .NET — JwtService.cs</div>
+        <pre>new JwtSecurityToken(
+  claims: [sub, role],
+  expires: now + 24h,
+  signingCredentials:
+    new(key, HmacSha256)
 );
 handler.WriteToken(token);</pre>
-        </div>
       </div>
-      <div class="green-box">✅ Response to login: <code>{"token": "eyJhbGci..."}</code></div>
+    </div>
+    <div class="ok">Login response to frontend: <code>{"token": "eyJhbGci..."}</code></div>
+    <div class="lbl">Token expiry at creation time</div>
+    <div class="tblw">
+      <table class="tbl">
+        <tr><th>Token Type</th><th>Expiry</th><th>Extra Claim</th><th>Used For</th></tr>
+        <tr><td>Login JWT</td><td>24 hours</td><td>sub=email, role=CUSTOMER</td><td>All protected API calls</td></tr>
+        <tr><td>Reset Password JWT</td><td>15 minutes</td><td>type="RESET_PASSWORD"</td><td>One-time password reset link in email</td></tr>
+      </table>
     </div>
   </div>
+</div>
 
-  <!-- STEP 3: Storing + Sending the token -->
-  <div class="step n3">
-    <button class="step-btn" onclick="tog(this)">
-      <div class="num">3</div>
-      <span class="step-icon">📤</span>
-      <div class="step-text">
-        <div class="step-title">Storing &amp; Sending the Token</div>
-        <div class="step-hint">Frontend saves token, attaches it to every protected request</div>
-      </div>
-      <span class="caret">▼</span>
-    </button>
-    <div class="step-body">
-      <div class="eli5"><strong>Analogy:</strong> After login, you get a wristband 🎫 (JWT). You keep it in your pocket (localStorage). Every time you enter a protected area, you show the wristband — the staff doesn't need to look you up again.</div>
-      <div class="lbl">Step 1 — Save the token after login</div>
-      <div class="code-block"><span class="cmt">// Frontend (React/JS)</span>
-const response = await fetch(<span class="str">'/api/auth/login'</span>, {
+<!-- N3 -->
+<div class="step n3" id="n3">
+  <button class="step-btn" onclick="tog(this)">
+    <div class="num">3</div><span class="sico">📤</span>
+    <div class="si"><div class="st">Storing and Sending the Token</div><div class="ss">FE saves token, attaches to every protected request</div></div>
+    <span class="caret">▼</span>
+  </button>
+  <div class="sb">
+    <div class="eli5"><b>Analogy:</b> After login you get a wristband 🎫. You keep it in your pocket (localStorage). Every time you enter a protected area, you show the wristband — the staff doesn't need to look you up in the database. The wristband proves who you are and what areas you're allowed in.</div>
+    <div class="lbl">Step 1 — Save token after login (Frontend JS)</div>
+    <div class="cb"><span class="key">const</span> response = await fetch(<span class="str">'/api/auth/login'</span>, {
   method: <span class="str">'POST'</span>,
+  headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
   body: JSON.stringify({ email, password })
 });
-const { token } = await response.json();
-localStorage.setItem(<span class="str">'token'</span>, token);  <span class="cmt">// save it!</span></div>
-      <div class="lbl">Step 2 — Send it with every protected request</div>
-      <div class="code-block"><span class="cmt">// Every API call that needs auth</span>
-const token = localStorage.getItem(<span class="str">'token'</span>);
+<span class="key">const</span> { token } = await response.json();
+localStorage.setItem(<span class="str">'jwt_token'</span>, token); <span class="cmt">// 💾 save it locally</span></div>
+    <div class="lbl">Step 2 — Attach to every protected API call</div>
+    <div class="cb"><span class="key">const</span> token = localStorage.getItem(<span class="str">'jwt_token'</span>);
+
 fetch(<span class="str">'/api/bookings/customer/5'</span>, {
   headers: {
     <span class="str">'Authorization'</span>: <span class="str">`Bearer ${token}`</span>
-    <span class="cmt">//  ↑ MUST be "Bearer " (capital B, space, then token)</span>
+    <span class="cmt">// ↑ EXACTLY: "Bearer " (capital B, one space, then token)</span>
   }
-})</div>
-      <div class="lbl">What the HTTP header looks like</div>
-      <div class="code-block">GET /api/bookings/customer/5 HTTP/1.1
-<span class="str">Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIi...</span></div>
-    </div>
+});</div>
+    <div class="lbl">What the raw HTTP request looks like</div>
+    <div class="cb">GET /api/bookings/customer/5 HTTP/1.1
+Host: localhost:8080
+<span class="str">Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIi...</span>
+Content-Type: application/json</div>
+    <div class="warn">⚠️ If you forget "Bearer " prefix or use lowercase "bearer", the filter won't find the token. The check is: <code>header.startsWith("Bearer ")</code></div>
   </div>
-
-  <!-- STEP 4: Server reads token -->
-  <div class="step n4">
-    <button class="step-btn" onclick="tog(this)">
-      <div class="num">4</div>
-      <span class="step-icon">🔍</span>
-      <div class="step-text">
-        <div class="step-title">Server Reads &amp; Validates Token</div>
-        <div class="step-hint">JwtAuthFilter (Java) or JwtMiddleware (.NET)</div>
-      </div>
-      <span class="caret">▼</span>
-    </button>
-    <div class="step-body">
-      <div class="eli5"><strong>The same process on both backends:</strong><br/>1. Read the <code>Authorization</code> header<br/>2. Remove "Bearer " prefix to get the raw token<br/>3. Verify the signature hasn't been tampered<br/>4. Check it hasn't expired<br/>5. Extract email + role from the payload<br/>6. Make user identity available to the controller</div>
-      <div class="cmp">
-        <div class="cmp-box cmp-j">
-          <div class="cmp-lbl">☕ Java result</div>
-          <pre>SecurityContextHolder
-  .getContext()
-  .setAuthentication(
-    authToken);</pre>
-        </div>
-        <div class="cmp-box cmp-n">
-          <div class="cmp-lbl">💠 .NET result</div>
-          <pre>ctx.Items["UserEmail"]
-  = email;
-ctx.Items["UserRole"]
-  = role;</pre>
-        </div>
-      </div>
-      <div class="lbl">What happens if token is invalid?</div>
-      <div style="background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:12px;font-size:11px;line-height:1.9">
-        <div>❌ <strong style="color:#fda4af">No token</strong> → identity NOT set → controller gets null user</div>
-        <div>❌ <strong style="color:#fda4af">Expired token</strong> → signature check fails → identity NOT set</div>
-        <div>❌ <strong style="color:#fda4af">Tampered token</strong> → signature mismatch → identity NOT set</div>
-        <div>✅ <strong style="color:#86efac">Valid token</strong> → email + role stored → controller runs normally</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 5: Authorization -->
-  <div class="step n5">
-    <button class="step-btn" onclick="tog(this)">
-      <div class="num">5</div>
-      <span class="step-icon">🚦</span>
-      <div class="step-text">
-        <div class="step-title">Authorization — Role Checks</div>
-        <div class="step-hint">Who is allowed to do what based on their role</div>
-      </div>
-      <span class="caret">▼</span>
-    </button>
-    <div class="step-body">
-      <div class="eli5"><strong>Authentication</strong> = "Who are you?" (is your token valid?)<br/><strong>Authorization</strong> = "What are you ALLOWED to do?" (is your role allowed here?)<br/><br/>In our project, roles are: <code>CUSTOMER</code> and <code>admin</code>.</div>
-      <div class="lbl">Java — role check in controller</div>
-      <div class="code-block"><span class="cmt">// Spring Security reads from SecurityContextHolder</span>
-<span class="key">@PreAuthorize</span>(<span class="str">"hasRole('CUSTOMER')"</span>)
-<span class="key">@GetMapping</span>(<span class="str">"/my-bookings"</span>)
-public ResponseEntity getMyBookings(Authentication auth) {
-  String email = auth.getName();  <span class="cmt">// email from JWT</span>
-  return ResponseEntity.ok(bookingService.<span class="fn">getByEmail</span>(email));
-}</div>
-      <div class="lbl">.NET — role check in controller</div>
-      <div class="code-block"><span class="cmt">// .NET reads from HttpContext.Items</span>
-<span class="key">[HttpGet]</span>(<span class="str">"my-bookings"</span>)
-public async Task&lt;IActionResult&gt; GetMyBookings() {
-  var role = HttpContext.Items[<span class="str">"UserRole"</span>]?.ToString();
-
-  if (role != <span class="str">"CUSTOMER"</span>)
-    return Unauthorized();  <span class="cmt">// 401 — wrong role</span>
-
-  var email = HttpContext.Items[<span class="str">"UserEmail"</span>]?.ToString();
-  return Ok(await _service.<span class="fn">GetByEmailAsync</span>(email));
-}</div>
-    </div>
-  </div>
-
-  <!-- STEP 6: Token Expiry -->
-  <div class="step n6">
-    <button class="step-btn" onclick="tog(this)">
-      <div class="num">6</div>
-      <span class="step-icon">⏱️</span>
-      <div class="step-text">
-        <div class="step-title">Token Expiry</div>
-        <div class="step-hint">24h for login, 15 minutes for password reset</div>
-      </div>
-      <span class="caret">▼</span>
-    </button>
-    <div class="step-body">
-      <div class="eli5"><strong>Tokens automatically expire</strong> — so even if someone steals your token, it only works for a limited time. Our project uses different expiry times depending on the use case.</div>
-      <div style="background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:12px;margin-top:12px">
-        <table style="width:100%;font-size:11px;border-collapse:collapse">
-          <tr style="border-bottom:1px solid rgba(255,255,255,.07)">
-            <th style="text-align:left;color:#334155;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px">Token Type</th>
-            <th style="text-align:left;color:#334155;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px">Expiry</th>
-            <th style="text-align:left;color:#334155;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px">Used for</th>
-          </tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.03)">
-            <td style="padding:6px 8px;color:#fcd34d">Login JWT</td>
-            <td style="padding:6px 8px;color:#86efac">24 hours</td>
-            <td style="padding:6px 8px;color:#64748b">All API calls after login</td>
-          </tr>
-          <tr>
-            <td style="padding:6px 8px;color:#fda4af">Reset Password JWT</td>
-            <td style="padding:6px 8px;color:#f97316">15 minutes</td>
-            <td style="padding:6px 8px;color:#64748b">One-time password reset link</td>
-          </tr>
-        </table>
-      </div>
-      <div class="green-box" style="margin-top:10px">✅ After 24h, the user gets a 401 Unauthorized → frontend redirects to login screen → user logs in again to get a fresh token.</div>
-    </div>
-  </div>
-
-  <!-- STEP 7: Google OAuth -->
-  <div class="step n7">
-    <button class="step-btn" onclick="tog(this)">
-      <div class="num">7</div>
-      <span class="step-icon">🌐</span>
-      <div class="step-text">
-        <div class="step-title">Google OAuth + JWT</div>
-        <div class="step-hint">Login with Google — still ends up with our own JWT</div>
-      </div>
-      <span class="caret">▼</span>
-    </button>
-    <div class="step-body">
-      <div class="eli5"><strong>Google OAuth doesn't replace JWT</strong> — it's just another way to verify your identity. After Google confirms "yes, this is a real Google account", our server issues our own JWT — and from that point, everything works exactly the same as normal login.</div>
-      <div style="background:#111827;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:12px;margin-top:12px;font-size:11px;line-height:2.2">
-        <div><span style="color:#7dd3fc">① </span>User clicks "Sign in with Google"</div>
-        <div><span style="color:#7dd3fc">② </span>Google verifies identity → gives frontend a <strong style="color:#fcd34d">Google ID Token</strong></div>
-        <div><span style="color:#7dd3fc">③ </span>Frontend sends Google ID Token to <code>POST /api/auth/google-login</code></div>
-        <div><span style="color:#7dd3fc">④ </span>Backend verifies the Google token (using Google's public API)</div>
-        <div><span style="color:#7dd3fc">⑤ </span>Backend extracts email from Google token → checks if user exists in <code>customer_master</code></div>
-        <div><span style="color:#7dd3fc">⑥ </span>Backend generates <strong style="color:#86efac">our own JWT</strong> using the same secret key</div>
-        <div><span style="color:#7dd3fc">⑦ </span>Returns <code>{"token": "eyJ..."}</code> — frontend uses it exactly like a normal login</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SUMMARY -->
-  <div class="lbl" style="margin-top:20px">🗺️ Complete JWT Life Cycle</div>
-  <div style="background:#0e1420;border:1px solid rgba(245,158,11,.2);border-radius:12px;padding:16px;font-size:11px;line-height:2.2">
-    <div><span style="color:#fcd34d">1.</span> User logs in → server checks password in DB ✓</div>
-    <div><span style="color:#fcd34d">2.</span> Server creates JWT with email + role, signs with secret key</div>
-    <div><span style="color:#fcd34d">3.</span> Response: <code>{"token": "eyJ..."}</code> → frontend saves in localStorage</div>
-    <div><span style="color:#fcd34d">4.</span> Every next request: frontend adds <code>Authorization: Bearer eyJ...</code></div>
-    <div><span style="color:#fcd34d">5.</span> Filter/Middleware reads header → validates → extracts email + role</div>
-    <div><span style="color:#fcd34d">6.</span> Controller uses email/role → calls service → returns data → JSON response</div>
-    <div><span style="color:#fcd34d">7.</span> After 24h token expires → 401 → user must login again</div>
-  </div>
-
 </div>
 
-<footer><a href="index.html" style="color:#334155;text-decoration:none">← Back to Home</a> &nbsp;·&nbsp; JWT · HS256 · 24h expiry · Java + .NET</footer>
+<!-- N4 -->
+<div class="step n4" id="n4">
+  <button class="step-btn" onclick="tog(this)">
+    <div class="num">4</div><span class="sico">🔍</span>
+    <div class="si"><div class="st">Server Reads and Validates Token</div><div class="ss">JwtAuthFilter (Java) / JwtMiddleware (.NET) — runs on every request</div></div>
+    <span class="caret">▼</span>
+  </button>
+  <div class="sb">
+    <div class="eli5"><b>Same logic, different code — both backends:</b><br/>① Read the Authorization header<br/>② Strip "Bearer " prefix to get raw token<br/>③ Re-sign header+payload with secret → compare to attached signature<br/>④ Check expiry date hasn't passed<br/>⑤ If valid: extract email + role<br/>⑥ Store identity so controller can read it</div>
+    <div class="lbl">Java — result stored in SecurityContextHolder</div>
+    <div class="cb"><span class="cmt">// JwtAuthFilter.java — after validation</span>
+UsernamePasswordAuthenticationToken authToken =
+  <span class="key">new</span> UsernamePasswordAuthenticationToken(
+    email, <span class="key">null</span>,
+    List.of(<span class="key">new</span> SimpleGrantedAuthority(<span class="str">"ROLE_"</span> + role)));
+SecurityContextHolder.getContext().<span class="fn">setAuthentication</span>(authToken);
+<span class="cmt">// Controller reads: Authentication auth param → auth.getName() = email</span></div>
+    <div class="lbl">.NET — result stored in HttpContext.Items</div>
+    <div class="cb"><span class="cmt">// JwtMiddleware.cs — after validation</span>
+ctx.Items[<span class="str">"UserEmail"</span>] = jwtService.<span class="fn">ExtractEmail</span>(token);
+ctx.Items[<span class="str">"UserRole"</span>]  = jwtService.<span class="fn">ExtractRole</span>(token);
+<span class="cmt">// Controller reads: HttpContext.Items["UserEmail"]?.ToString()</span></div>
+    <div class="lbl">All possible scenarios — what happens if token is missing/bad</div>
+    <div class="tblw">
+      <table class="tbl">
+        <tr><th>Scenario</th><th>What happens</th><th>Client receives</th></tr>
+        <tr><td>✅ Valid token</td><td>Email + role set on context → controller runs</td><td>200 OK + data</td></tr>
+        <tr><td>❌ No token</td><td>Identity not set → controller gets null user</td><td>401 Unauthorized</td></tr>
+        <tr><td>❌ Expired token</td><td>Expiry check fails → identity not set</td><td>401 Unauthorized</td></tr>
+        <tr><td>❌ Tampered payload</td><td>Signature mismatch → identity not set</td><td>401 Unauthorized</td></tr>
+        <tr><td>❌ Wrong secret key</td><td>Signature mismatch (different key)</td><td>401 Unauthorized</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
 
-<script>
-  function tog(btn){btn.closest('.step').classList.toggle('open')}
-</script>
+<!-- N5 -->
+<div class="step n5" id="n5">
+  <button class="step-btn" onclick="tog(this)">
+    <div class="num">5</div><span class="sico">🚦</span>
+    <div class="si"><div class="st">Authorization — Role-Based Access</div><div class="ss">Who is allowed to do what — CUSTOMER vs admin</div></div>
+    <span class="caret">▼</span>
+  </button>
+  <div class="sb">
+    <div class="eli5"><b>Authentication</b> ("are you logged in?") already happened in Step 4. Now <b>Authorization</b> checks "are you <i>allowed</i> to do this?" Our project has two roles: <code>CUSTOMER</code> (regular user) and <code>admin</code>. A customer can only see their own bookings; an admin can see all.</div>
+    <div class="lbl">Roles in our project</div>
+    <div class="tblw">
+      <table class="tbl">
+        <tr><th>Role</th><th>Where stored</th><th>Example permissions</th></tr>
+        <tr><td>CUSTOMER</td><td>customer_master.customer_role</td><td>Book tours, view own bookings, update own profile</td></tr>
+        <tr><td>admin</td><td>customer_master.customer_role</td><td>View all bookings, manage tours, manage users</td></tr>
+      </table>
+    </div>
+    <div class="lbl">Java — role check via Spring @PreAuthorize</div>
+    <div class="cb"><span class="cmt">// SecurityContext was set by JwtAuthFilter with "ROLE_CUSTOMER"</span>
+<span class="ann">@PreAuthorize</span>(<span class="str">"hasRole('CUSTOMER')"</span>)
+<span class="ann">@GetMapping</span>(<span class="str">"/my-bookings"</span>)
+ResponseEntity getMyBookings(Authentication auth) {
+  String email = auth.getName(); <span class="cmt">// from JWT "sub"</span>
+  <span class="key">return</span> ResponseEntity.ok(service.<span class="fn">getByEmail</span>(email));
+}
+
+<span class="cmt">// Admin-only endpoint:</span>
+<span class="ann">@PreAuthorize</span>(<span class="str">"hasRole('admin')"</span>)
+<span class="ann">@GetMapping</span>(<span class="str">"/all-bookings"</span>)
+ResponseEntity getAllBookings() { ... }</div>
+    <div class="lbl">.NET — role check manually in controller</div>
+    <div class="cb"><span class="cmt">// HttpContext.Items was set by JwtMiddleware</span>
+<span class="ann">[HttpGet(<span class="str">"my-bookings"</span>)]</span>
+<span class="key">public async</span> Task&lt;IActionResult&gt; <span class="fn">GetMyBookings</span>() {
+  <span class="key">var</span> role = HttpContext.Items[<span class="str">"UserRole"</span>]?.ToString();
+  <span class="key">if</span> (role != <span class="str">"CUSTOMER"</span>)
+    <span class="key">return</span> Unauthorized(<span class="key">new</span>{ message = <span class="str">"Customers only"</span> });
+
+  <span class="key">var</span> email = HttpContext.Items[<span class="str">"UserEmail"</span>]?.ToString();
+  <span class="key">return</span> Ok(await _service.<span class="fn">GetByEmailAsync</span>(email));
+}</div>
+  </div>
+</div>
+
+<!-- N6 -->
+<div class="step n6" id="n6">
+  <button class="step-btn" onclick="tog(this)">
+    <div class="num">6</div><span class="sico">⏱️</span>
+    <div class="si"><div class="st">Token Expiry and Renewal</div><div class="ss">Login = 24h · Reset = 15min · What happens when expired</div></div>
+    <span class="caret">▼</span>
+  </button>
+  <div class="sb">
+    <div class="eli5"><b>Tokens expire</b> — so even if stolen, they only work for a limited time. After expiry, the client gets a 401 and must log in again to receive a fresh token.</div>
+    <div class="lbl">Expiry configuration</div>
+    <div class="tblw">
+      <table class="tbl">
+        <tr><th>Token Type</th><th>Expiry Time</th><th>Extra Claim</th><th>What happens when expired</th></tr>
+        <tr><td>Login JWT</td><td>24 hours</td><td>sub + role</td><td>401 → redirect to login page → user logs in → new token</td></tr>
+        <tr><td>Reset Password JWT</td><td>15 minutes</td><td>type="RESET_PASSWORD"</td><td>Reset link becomes invalid → user must request again</td></tr>
+      </table>
+    </div>
+    <div class="lbl">Java — expiry check in JwtUtil.isTokenValid()</div>
+    <div class="cb"><span class="key">public boolean</span> <span class="fn">isTokenValid</span>(String token) {
+  <span class="key">try</span> {
+    Jwts.parserBuilder()
+      .setSigningKey(secretKey)
+      .build()
+      .parseClaimsJws(token); <span class="cmt">// throws if expired or bad sig</span>
+    <span class="key">return true</span>;
+  } <span class="key">catch</span>(ExpiredJwtException e) { <span class="key">return false</span>; }
+    <span class="key">catch</span>(JwtException e)         { <span class="key">return false</span>; }
+}</div>
+    <div class="lbl">.NET — expiry check in JwtService.IsTokenValid()</div>
+    <div class="cb"><span class="key">public bool</span> <span class="fn">IsTokenValid</span>(string token) {
+  <span class="key">var</span> handler = <span class="key">new</span> JwtSecurityTokenHandler();
+  <span class="key">var</span> key = <span class="key">new</span> SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
+  <span class="key">try</span> {
+    handler.ValidateToken(token, <span class="key">new</span> TokenValidationParameters {
+      ValidateLifetime = <span class="key">true</span>,          <span class="cmt">// checks exp claim</span>
+      ValidateIssuerSigningKey = <span class="key">true</span>,  <span class="cmt">// checks signature</span>
+      IssuerSigningKey = key,
+      ValidateIssuer = <span class="key">false</span>,
+      ValidateAudience = <span class="key">false</span>
+    }, out _);
+    <span class="key">return true</span>;
+  } <span class="key">catch</span> { <span class="key">return false</span>; }
+}</div>
+    <div class="ok">✅ After expiry → frontend catches 401 → localStorage.removeItem('jwt_token') → redirect to /login</div>
+  </div>
+</div>
+
+<!-- N7 -->
+<div class="step n7" id="n7">
+  <button class="step-btn" onclick="tog(this)">
+    <div class="num">7</div><span class="sico">🌐</span>
+    <div class="si"><div class="st">Google OAuth + JWT</div><div class="ss">Login with Google → Google ID token → our own JWT</div></div>
+    <span class="caret">▼</span>
+  </button>
+  <div class="sb">
+    <div class="eli5"><b>Google OAuth doesn't replace our JWT</b> — it's just an alternative way to verify identity. After Google confirms "this is a real Gmail account", our backend creates its own JWT. From that point, everything works exactly the same as a normal login. Google is only involved in the identity verification step.</div>
+    <div class="lbl">Google OAuth Flow — step by step</div>
+    <div class="cb"><span class="cmt">// ① User clicks "Sign in with Google" on frontend</span>
+<span class="cmt">// ② Google verifies their Gmail account</span>
+<span class="cmt">// ③ Google returns a Google ID Token to the frontend</span>
+<span class="cmt">// ④ Frontend POSTS the Google token to our backend</span>
+
+<span class="key">POST</span> /api/auth/google-login   (or /auth/oauth2/google in Java)
+{ "idToken": "eyJGoogleToken..." }
+
+<span class="cmt">// ⑤ Backend verifies Google token using Google's public API</span>
+<span class="cmt">// ⑥ Extract email from Google payload</span>
+<span class="cmt">// ⑦ Check/create user in customer_master table</span>
+<span class="cmt">// ⑧ Generate OUR OWN JWT (same secret key, same format)</span>
+<span class="cmt">// ⑨ Return our JWT to frontend — works like normal login</span>
+
+Response: { "token": "eyJhbGci..." }</div>
+    <div class="info">💡 The Google token and our JWT are completely different. Google's token is only used once to verify identity. After that, we create our own JWT and Google is no longer involved. The frontend uses our JWT for all subsequent API calls.</div>
+    <div class="lbl">Java — OAuth2 success handler</div>
+    <div class="cb"><span class="cmt">// OAuth2SuccessHandler.java — called after Google confirms identity</span>
+<span class="ann">@Component</span>
+<span class="key">public class</span> OAuth2SuccessHandler
+    <span class="key">extends</span> SimpleUrlAuthenticationSuccessHandler {
+
+  <span class="key">public void</span> <span class="fn">onAuthenticationSuccess</span>(...) {
+    String email = oAuth2User.getAttribute(<span class="str">"email"</span>);
+    String role = <span class="str">"CUSTOMER"</span>;
+
+    <span class="cmt">// Create/fetch user in DB</span>
+    authService.<span class="fn">registerIfNotExists</span>(email, role);
+
+    <span class="cmt">// Generate OUR JWT</span>
+    String token = jwtUtil.<span class="fn">generateToken</span>(email, role);
+
+    <span class="cmt">// Redirect frontend with token in URL (or cookie)</span>
+    <span class="fn">getRedirectStrategy</span>().sendRedirect(req, res,
+      <span class="str">"/oauth2/success?token="</span> + token);
+  }
+}</div>
+  </div>
+</div>
+
+<!-- FULL LIFECYCLE SUMMARY -->
+<div class="lbl" style="margin-top:20px">🗺️ Complete JWT Lifecycle Summary</div>
+<div style="background:#0e1420;border:1px solid rgba(245,158,11,.2);border-radius:12px;padding:14px 16px;font-size:11px;line-height:2.2">
+  <div><span style="color:#fcd34d">①</span> User submits email + password → AuthService checks BCrypt hash in DB</div>
+  <div><span style="color:#fcd34d">②</span> Password matches → JwtUtil/JwtService creates token (email+role+24h expiry, signed with secret)</div>
+  <div><span style="color:#fcd34d">③</span> <code>{"token": "eyJ..."}</code> returned → frontend stores in <code>localStorage</code></div>
+  <div><span style="color:#fcd34d">④</span> Every protected API call → frontend adds <code>Authorization: Bearer eyJ...</code> header</div>
+  <div><span style="color:#fcd34d">⑤</span> JwtAuthFilter/JwtMiddleware reads header → validates signature + expiry → extracts email + role</div>
+  <div><span style="color:#fcd34d">⑥</span> Identity stored in SecurityContext (Java) / HttpContext.Items (.NET) → controller reads it</div>
+  <div><span style="color:#fcd34d">⑦</span> Service queries DB using email → returns data → JSON response → browser</div>
+  <div><span style="color:#fcd34d">⑧</span> After 24h: token expires → 401 response → frontend redirects to login → user gets fresh token</div>
+</div>
+
+</div>
+<footer><a href="index.html" style="color:#334155;text-decoration:none">← Back to Home</a> &nbsp;·&nbsp; JWT · HS256 · 24h login · 15min reset · Java + .NET</footer>
+<script>function tog(b){b.closest('.step').classList.toggle('open')}</script>
 </body>
 </html>
