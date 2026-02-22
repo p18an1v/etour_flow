@@ -3,732 +3,167 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>e-Tour Flow — DB Reference</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <title>e-Tour — Interview Reference Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
-    /* ─── Reset & Base ─── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg:        #0b0f19;
-      --surface:   #111827;
-      --surface2:  #1a2133;
-      --border:    rgba(255,255,255,0.07);
-      --muted:     #64748b;
-      --text:      #e2e8f0;
-      --radius:    14px;
-      --radius-sm: 8px;
-    }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-    }
-    code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#080c14;color:#e2e8f0;min-height:100vh;-webkit-font-smoothing:antialiased}
 
-    /* ─── HEADER ─── */
-    .header {
-      position: sticky; top: 0; z-index: 50;
-      background: rgba(11,15,25,0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 20px;
-    }
-    .header-inner {
-      max-width: 1280px; margin: 0 auto;
-      display: flex; align-items: center; gap: 14px;
-    }
-    .logo {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: linear-gradient(135deg,#6366f1,#8b5cf6);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 17px; flex-shrink: 0;
-    }
-    .header-text h1 { font-size: 15px; font-weight: 700; }
-    .header-text p  { font-size: 11px; color: var(--muted); margin-top: 1px; }
-    .header-actions { margin-left: auto; display: flex; gap: 6px; }
-    .hbtn {
-      font-size: 11px; font-weight: 600;
-      padding: 6px 12px; border-radius: 20px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--muted); cursor: pointer;
-      transition: color .15s, border-color .15s;
-    }
-    .hbtn:hover { color: var(--text); border-color: rgba(255,255,255,.2); }
+    /* HEADER */
+    .hdr{text-align:center;padding:40px 20px 24px}
+    .hdr .badge{display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}
+    .hdr h1{font-size:clamp(22px,5vw,36px);font-weight:800;background:linear-gradient(135deg,#a5b4fc,#c4b5fd,#f9a8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;margin-bottom:8px}
+    .hdr p{font-size:13px;color:#64748b;max-width:480px;margin:0 auto;line-height:1.6}
 
-    /* ─── NAV PILLS ─── */
-    .nav-bar {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 16px;
-      display: flex; gap: 6px; overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .nav-bar::-webkit-scrollbar { display: none; }
-    .npill {
-      flex-shrink: 0;
-      font-size: 10.5px; font-weight: 700;
-      padding: 5px 11px; border-radius: 20px;
-      text-decoration: none; white-space: nowrap;
-      border: 1px solid transparent;
-      transition: opacity .15s;
-    }
-    .npill:hover { opacity: .75; }
+    /* SECTIONS */
+    .section{max-width:560px;margin:0 auto;padding:0 16px}
+    .section-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#334155;margin:30px 0 12px;text-align:center}
 
-    /* ─── LAYOUT ─── */
-    .page { max-width: 820px; margin: 0 auto; padding: 20px 14px 60px; }
+    /* CARDS */
+    .card{display:block;border-radius:16px;border:1px solid rgba(255,255,255,.07);background:#0e1420;padding:18px 20px;margin-bottom:10px;text-decoration:none;transition:border-color .2s, transform .15s, box-shadow .2s;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .card:hover,.card:active{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+    .card-row{display:flex;align-items:center;gap:14px}
+    .card-icon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .card-text h3{font-size:15px;font-weight:700;margin-bottom:3px}
+    .card-text p{font-size:11px;color:#64748b;line-height:1.5}
+    .card-arrow{margin-left:auto;font-size:18px;color:#334155;flex-shrink:0}
 
-    /* ─── STEP CARD ─── */
-    .step-card {
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: var(--surface);
-      margin-bottom: 10px;
-      overflow: hidden;
-      transition: border-color .2s;
-    }
-    .step-card.open { border-color: rgba(255,255,255,.12); }
+    /* What's inside badge */
+    .inside{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+    .ins-tag{font-size:9px;font-weight:600;padding:2px 8px;border-radius:20px;border:1px solid transparent}
 
-    /* Header row — always visible */
-    .step-head {
-      display: flex; align-items: center;
-      gap: 12px; padding: 14px 16px;
-      cursor: pointer; user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .step-num {
-      width: 28px; height: 28px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 800; flex-shrink: 0;
-    }
-    .step-emoji { font-size: 19px; flex-shrink: 0; line-height: 1; }
-    .step-info { flex: 1; min-width: 0; }
-    .step-title {
-      font-size: 13.5px; font-weight: 700; line-height: 1.2;
-      margin-bottom: 2px;
-    }
-    .step-sub { font-size: 11px; color: var(--muted); }
-    .caret {
-      font-size: 11px; color: var(--muted);
-      transition: transform .22s; flex-shrink: 0;
-    }
-    .open .caret { transform: rotate(180deg); }
+    /* Divider */
+    .divider{height:1px;background:rgba(255,255,255,.05);max-width:560px;margin:10px auto 0}
 
-    /* Arrow between steps */
-    .step-arrow {
-      display: flex; justify-content: center;
-      color: #1e3a5f; font-size: 16px;
-      margin: -4px 0;
-      user-select: none;
-    }
+    footer{text-align:center;font-size:10px;color:#1e293b;padding:30px 16px 40px}
 
-    /* Body — expandable */
-    .step-body {
-      display: none;
-      padding: 0 16px 16px;
-      border-top: 1px solid var(--border);
-      animation: fadeIn .18s ease;
-    }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; } }
+    /* Themes */
+    .t-db{border-color:rgba(99,102,241,.25)!important}
+    .t-db:hover{border-color:rgba(99,102,241,.55)!important}
+    .t-db .card-icon{background:rgba(99,102,241,.15)}
+    .t-db .card-text h3{color:#a5b4fc}
+    .t-db .ins-tag{background:rgba(99,102,241,.15);color:#a5b4fc;border-color:rgba(99,102,241,.3)}
 
-    /* Tags */
-    .tags { display: flex; flex-wrap: wrap; gap: 5px; padding-top: 13px; margin-bottom: 12px; }
-    .tag { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+    .t-java{border-color:rgba(34,197,94,.2)!important}
+    .t-java:hover{border-color:rgba(34,197,94,.5)!important}
+    .t-java .card-icon{background:rgba(34,197,94,.13)}
+    .t-java .card-text h3{color:#86efac}
+    .t-java .ins-tag{background:rgba(34,197,94,.13);color:#86efac;border-color:rgba(34,197,94,.28)}
 
-    /* Flag note */
-    .fnote {
-      font-size: 11px; line-height: 1.5;
-      background: rgba(251,191,36,.07);
-      border: 1px solid rgba(251,191,36,.22);
-      color: #fde68a; border-radius: var(--radius-sm);
-      padding: 8px 11px; margin-bottom: 13px;
-    }
+    .t-net{border-color:rgba(124,58,237,.2)!important}
+    .t-net:hover{border-color:rgba(124,58,237,.5)!important}
+    .t-net .card-icon{background:rgba(124,58,237,.13)}
+    .t-net .card-text h3{color:#c4b5fd}
+    .t-net .ins-tag{background:rgba(124,58,237,.13);color:#c4b5fd;border-color:rgba(124,58,237,.28)}
 
-    /* DB section */
-    .db-lbl {
-      font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
-      text-transform: uppercase; color: #334155;
-      margin-bottom: 8px;
-    }
-    .tcard {
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      padding: 10px 12px; margin-bottom: 6px;
-      background: var(--surface2);
-    }
-    .tcard:last-child { margin-bottom: 0; }
-    .tname {
-      font-size: 11px; font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
-      margin-bottom: 7px;
-    }
-    .fields { list-style: none; display: flex; flex-direction: column; gap: 3px; }
-    .fields li {
-      font-size: 10px; color: var(--muted);
-      display: flex; align-items: flex-start;
-      gap: 6px; line-height: 1.4;
-    }
-    .dot {
-      width: 5px; height: 5px; border-radius: 50%;
-      flex-shrink: 0; margin-top: 4px;
-    }
-    .pk { color: #fbbf24 !important; font-weight: 600; }
-    .fk { color: #93c5fd !important; }
-    .sql {
-      font-size: 10px; color: #475569;
-      margin-top: 8px; line-height: 1.5;
-    }
-    .ok-card {
-      border-color: rgba(34,197,94,.3) !important;
-      background: rgba(34,197,94,.06) !important;
-    }
+    .t-jwt{border-color:rgba(245,158,11,.2)!important}
+    .t-jwt:hover{border-color:rgba(245,158,11,.5)!important}
+    .t-jwt .card-icon{background:rgba(245,158,11,.13)}
+    .t-jwt .card-text h3{color:#fcd34d}
+    .t-jwt .ins-tag{background:rgba(245,158,11,.13);color:#fcd34d;border-color:rgba(245,158,11,.28)}
 
-    /* ── COLOUR THEMES ── */
-    /* Each theme: num badge, title, tags, table name, dot colour, border accent */
-
-    /* 1 Violet */
-    .t1 { --acc: #7c3aed; --acc2: #c4b5fd; }
-    .t1.open { border-color: rgba(124,58,237,.35) !important; }
-    .t1 .step-num { background: linear-gradient(135deg,#7c3aed,#6366f1); color:#fff; }
-    .t1 .step-title { color: var(--acc2); }
-    .t1 .tag  { background:rgba(124,58,237,.18); color:var(--acc2); border:1px solid rgba(124,58,237,.3); }
-    .t1 .tname { color: var(--acc2); }
-    .t1 .dot  { background: var(--acc); }
-
-    /* 2 Sky */
-    .t2 { --acc: #0ea5e9; --acc2: #7dd3fc; }
-    .t2.open { border-color: rgba(14,165,233,.35) !important; }
-    .t2 .step-num { background: linear-gradient(135deg,#0ea5e9,#0284c7); color:#fff; }
-    .t2 .step-title { color: var(--acc2); }
-    .t2 .tag  { background:rgba(14,165,233,.17); color:var(--acc2); border:1px solid rgba(14,165,233,.3); }
-    .t2 .tname { color: var(--acc2); }
-    .t2 .dot  { background: var(--acc); }
-
-    /* 3 Teal */
-    .t3 { --acc: #14b8a6; --acc2: #5eead4; }
-    .t3.open { border-color: rgba(20,184,166,.35) !important; }
-    .t3 .step-num { background: linear-gradient(135deg,#14b8a6,#0d9488); color:#fff; }
-    .t3 .step-title { color: var(--acc2); }
-    .t3 .tag  { background:rgba(20,184,166,.17); color:var(--acc2); border:1px solid rgba(20,184,166,.3); }
-    .t3 .tname { color: var(--acc2); }
-    .t3 .dot  { background: var(--acc); }
-
-    /* 4 Indigo */
-    .t4 { --acc: #6366f1; --acc2: #a5b4fc; }
-    .t4.open { border-color: rgba(99,102,241,.35) !important; }
-    .t4 .step-num { background: linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; }
-    .t4 .step-title { color: var(--acc2); }
-    .t4 .tag  { background:rgba(99,102,241,.18); color:var(--acc2); border:1px solid rgba(99,102,241,.3); }
-    .t4 .tname { color: var(--acc2); }
-    .t4 .dot  { background: var(--acc); }
-
-    /* 5 Rose */
-    .t5 { --acc: #f43f5e; --acc2: #fda4af; }
-    .t5.open { border-color: rgba(244,63,94,.35) !important; }
-    .t5 .step-num { background: linear-gradient(135deg,#f43f5e,#e11d48); color:#fff; }
-    .t5 .step-title { color: var(--acc2); }
-    .t5 .tag  { background:rgba(244,63,94,.17); color:var(--acc2); border:1px solid rgba(244,63,94,.3); }
-    .t5 .tname { color: var(--acc2); }
-    .t5 .dot  { background: var(--acc); }
-
-    /* 6 Amber */
-    .t6 { --acc: #f59e0b; --acc2: #fcd34d; }
-    .t6.open { border-color: rgba(245,158,11,.35) !important; }
-    .t6 .step-num { background: linear-gradient(135deg,#f59e0b,#d97706); color:#fff; }
-    .t6 .step-title { color: var(--acc2); }
-    .t6 .tag  { background:rgba(245,158,11,.17); color:var(--acc2); border:1px solid rgba(245,158,11,.3); }
-    .t6 .tname { color: var(--acc2); }
-    .t6 .dot  { background: var(--acc); }
-
-    /* 7 Green */
-    .t7 { --acc: #22c55e; --acc2: #86efac; }
-    .t7.open { border-color: rgba(34,197,94,.35) !important; }
-    .t7 .step-num { background: linear-gradient(135deg,#22c55e,#16a34a); color:#fff; }
-    .t7 .step-title { color: var(--acc2); }
-    .t7 .tag  { background:rgba(34,197,94,.17); color:var(--acc2); border:1px solid rgba(34,197,94,.3); }
-    .t7 .tname { color: var(--acc2); }
-    .t7 .dot  { background: var(--acc); }
-
-    /* 8 Teal-green */
-    .t8 { --acc: #10b981; --acc2: #6ee7b7; }
-    .t8.open { border-color: rgba(16,185,129,.35) !important; }
-    .t8 .step-num { background: linear-gradient(135deg,#10b981,#059669); color:#fff; }
-    .t8 .step-title { color: var(--acc2); }
-    .t8 .tag  { background:rgba(16,185,129,.17); color:var(--acc2); border:1px solid rgba(16,185,129,.3); }
-    .t8 .tname { color: var(--acc2); }
-    .t8 .dot  { background: var(--acc); }
-
-    /* 9 Emerald */
-    .t9 { --acc: #34d399; --acc2: #a7f3d0; }
-    .t9.open { border-color: rgba(52,211,153,.4) !important; }
-    .t9 .step-num { background: linear-gradient(135deg,#34d399,#10b981); color:#fff; }
-    .t9 .step-title { color: var(--acc2); }
-    .t9 .tag  { background:rgba(52,211,153,.17); color:var(--acc2); border:1px solid rgba(52,211,153,.3); }
-    .t9 .tname { color: var(--acc2); }
-    .t9 .dot  { background: var(--acc); }
-
-    /* ─── DESKTOP ─── */
-    @media (min-width: 860px) {
-      .page {
-        max-width: 100%;
-        padding: 28px 28px 60px;
-        display: flex;
-        flex-direction: row;
-        align-items: flex-start;
-        gap: 0;
-        overflow-x: auto;
-      }
-      /* Card becomes a fixed-width column */
-      .step-card {
-        flex-shrink: 0;
-        width: 205px;
-        margin-bottom: 0;
-      }
-      /* Always show body on desktop */
-      .step-card .step-body { display: block !important; animation: none; }
-      .step-card .caret { display: none; }
-      .step-card { cursor: default; }
-      .step-head { cursor: default; }
-      /* Arrow rotates horizontal */
-      .step-arrow {
-        writing-mode: horizontal-tb;
-        padding: 56px 4px 0;
-        font-size: 18px;
-        flex-shrink: 0;
-        align-items: flex-start;
-      }
-    }
-
-    /* ─── FOOTER ─── */
-    footer {
-      text-align: center;
-      font-size: 10px; color: #1e293b;
-      padding: 24px 16px 40px;
-    }
+    /* Quick tip box */
+    .tip{max-width:560px;margin:24px auto 0;background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:14px 16px;font-size:11px;color:#94a3b8;line-height:1.7}
+    .tip b{color:#a5b4fc}
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-inner">
-    <div class="logo">🌏</div>
-    <div class="header-text">
-      <h1>e-Tour DB Flow</h1>
-      <p>Customer journey · Real MySQL schema</p>
-    </div>
-    <div class="header-actions">
-      <button class="hbtn" onclick="expandAll()">Expand All</button>
-      <button class="hbtn" onclick="collapseAll()">Collapse</button>
-    </div>
-  </div>
+<div class="hdr">
+  <div class="badge">🎯 Interview Quick Reference</div>
+  <h1>e-Tour Project<br/>Flow Diagrams</h1>
+  <p>Choose which flow you want to explore — all explained simply with real code from the project</p>
 </div>
 
-<!-- QUICK NAV -->
-<nav class="nav-bar">
-  <a class="npill" href="#s1" style="background:rgba(124,58,237,.18);color:#c4b5fd;border-color:rgba(124,58,237,.35);">1 · Homepage</a>
-  <a class="npill" href="#s2" style="background:rgba(14,165,233,.16);color:#7dd3fc;border-color:rgba(14,165,233,.32);">2 · Category</a>
-  <a class="npill" href="#s3" style="background:rgba(20,184,166,.16);color:#5eead4;border-color:rgba(20,184,166,.32);">3 · Sub-Cat</a>
-  <a class="npill" href="#s4" style="background:rgba(99,102,241,.18);color:#a5b4fc;border-color:rgba(99,102,241,.35);">4 · Tour List</a>
-  <a class="npill" href="#s5" style="background:rgba(244,63,94,.16);color:#fda4af;border-color:rgba(244,63,94,.32);">5 · Details</a>
-  <a class="npill" href="#s6" style="background:rgba(245,158,11,.16);color:#fcd34d;border-color:rgba(245,158,11,.32);">6 · Login</a>
-  <a class="npill" href="#s7" style="background:rgba(34,197,94,.16);color:#86efac;border-color:rgba(34,197,94,.32);">7 · Book</a>
-  <a class="npill" href="#s8" style="background:rgba(16,185,129,.16);color:#6ee7b7;border-color:rgba(16,185,129,.32);">8 · Payment</a>
-  <a class="npill" href="#s9" style="background:rgba(52,211,153,.16);color:#a7f3d0;border-color:rgba(52,211,153,.32);">9 · Confirmed</a>
-</nav>
+<div class="section">
 
-<!-- STEPS -->
-<div class="page">
+  <div class="section-label">📦 Database Flow</div>
 
-  <!-- 1 -->
-  <div class="step-card t1" id="s1">
-    <div class="step-head" onclick="toggle(this)">
-      <div class="step-num">1</div>
-      <span class="step-emoji">🏠</span>
-      <div class="step-info">
-        <div class="step-title">Homepage</div>
-        <div class="step-sub">Show main categories</div>
+  <a class="card t-db" href="etour-flow.html">
+    <div class="card-row">
+      <div class="card-icon">🗄️</div>
+      <div class="card-text">
+        <h3>Database &amp; Customer Flow</h3>
+        <p>How a customer browses tours and books — each step mapped to DB tables</p>
       </div>
-      <span class="caret">▼</span>
+      <span class="card-arrow">›</span>
     </div>
-    <div class="step-body">
-      <div class="tags">
-        <span class="tag">DOM</span><span class="tag">INT</span><span class="tag">VS</span><span class="tag">CKD</span>
-      </div>
-      <div class="fnote">⚑ <b>jump_flag = 1</b> → skip Sub-Category, go to Tour List</div>
-      <div class="db-lbl">📦 Data From</div>
-      <div class="tcard">
-        <div class="tname">category_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 category_id INT</span></li>
-          <li><span class="dot"></span>cat_code CHAR(3)</li>
-          <li><span class="dot"></span>subcat_code — <code>NULL</code> = top-level</li>
-          <li><span class="dot"></span>category_name VARCHAR(255)</li>
-          <li><span class="dot"></span>image_path VARCHAR(255)</li>
-          <li><span class="dot"></span>jump_flag TINYINT(1)</li>
-        </ul>
-        <div class="sql">SQL: <code style="color:#c4b5fd">SELECT * WHERE subcat_code IS NULL</code></div>
-      </div>
+    <div class="inside">
+      <span class="ins-tag">category_master</span>
+      <span class="ins-tag">tour_master</span>
+      <span class="ins-tag">booking_header</span>
+      <span class="ins-tag">payment_master</span>
+      <span class="ins-tag">9 steps</span>
     </div>
-  </div>
+  </a>
 
-  <div class="step-arrow">↓</div>
+  <div class="divider"></div>
+  <div class="section-label">⚙️ Backend Code Flow</div>
 
-  <!-- 2 -->
-  <div class="step-card t2" id="s2">
-    <div class="step-head" onclick="toggle(this)">
-      <div class="step-num">2</div>
-      <span class="step-emoji">🗂️</span>
-      <div class="step-info">
-        <div class="step-title">Select Category</div>
-        <div class="step-sub">Tap a category tile</div>
+  <a class="card t-java" href="backend-java-flow.html">
+    <div class="card-row">
+      <div class="card-icon">☕</div>
+      <div class="card-text">
+        <h3>Java (Spring Boot) Flow</h3>
+        <p>How an API request travels through Spring Security, Filter, Controller, Service to DB</p>
       </div>
-      <span class="caret">▼</span>
+      <span class="card-arrow">›</span>
     </div>
-    <div class="step-body">
-      <div class="tags">
-        <span class="tag">cat_code stored</span><span class="tag">jump_flag check</span>
-      </div>
-      <div class="fnote">⚑ <b>jump_flag 0</b> → Sub-Category &nbsp;|&nbsp; <b>1</b> → Tour List</div>
-      <div class="db-lbl">📦 Data From</div>
-      <div class="tcard">
-        <div class="tname">category_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 category_id</span> → passed as param</li>
-          <li><span class="dot"></span>cat_code → filter sub-cats</li>
-          <li><span class="dot"></span>jump_flag → routing decision</li>
-        </ul>
-      </div>
+    <div class="inside">
+      <span class="ins-tag">SecurityConfig</span>
+      <span class="ins-tag">JwtAuthFilter</span>
+      <span class="ins-tag">Controller</span>
+      <span class="ins-tag">Service</span>
+      <span class="ins-tag">JPA Repository</span>
     </div>
-  </div>
+  </a>
 
-  <div class="step-arrow">↓</div>
-
-  <!-- 3 -->
-  <div class="step-card t3" id="s3">
-    <div class="step-head" onclick="toggle(this)">
-      <div class="step-num">3</div>
-      <span class="step-emoji">📁</span>
-      <div class="step-info">
-        <div class="step-title">Sub-Category</div>
-        <div class="step-sub">Same table, filtered rows</div>
+  <a class="card t-net" href="backend-dotnet-flow.html">
+    <div class="card-row">
+      <div class="card-icon">💠</div>
+      <div class="card-text">
+        <h3>.NET (ASP.NET Core) Flow</h3>
+        <p>Middleware pipeline — Logging → Exception → JWT → Controller → EF Core → MySQL</p>
       </div>
-      <span class="caret">▼</span>
+      <span class="card-arrow">›</span>
     </div>
-    <div class="step-body">
-      <div class="tags">
-        <span class="tag">Europe</span><span class="tag">Kashmir</span><span class="tag">SEA</span>
-      </div>
-      <div class="fnote">⚑ No separate sub_category_master! Filtered from <b>category_master</b> where <code>subcat_code = cat_code</code></div>
-      <div class="db-lbl">📦 Data From</div>
-      <div class="tcard">
-        <div class="tname">category_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 category_id INT</span></li>
-          <li><span class="dot"></span>subcat_code = parent's cat_code</li>
-          <li><span class="dot"></span>category_name, image_path</li>
-          <li><span class="dot"></span>jump_flag TINYINT(1)</li>
-        </ul>
-        <div class="sql">SQL: <code style="color:#5eead4">SELECT * WHERE subcat_code = 'INT'</code></div>
-      </div>
+    <div class="inside">
+      <span class="ins-tag">Program.cs</span>
+      <span class="ins-tag">JwtMiddleware</span>
+      <span class="ins-tag">Controller</span>
+      <span class="ins-tag">Service</span>
+      <span class="ins-tag">EF Core</span>
     </div>
-  </div>
+  </a>
 
-  <div class="step-arrow">↓</div>
+  <div class="divider"></div>
+  <div class="section-label">🔐 Authentication</div>
 
-  <!-- 4 -->
-  <div class="step-card t4" id="s4">
-    <div class="step-head" onclick="toggle(this)">
-      <div class="step-num">4</div>
-      <span class="step-emoji">🗺️</span>
-      <div class="step-info">
-        <div class="step-title">Tour Package List</div>
-        <div class="step-sub">Cards with dates &amp; price</div>
+  <a class="card t-jwt" href="jwt-flow.html">
+    <div class="card-row">
+      <div class="card-icon">🔑</div>
+      <div class="card-text">
+        <h3>JWT Auth Flow</h3>
+        <p>How tokens are created, stored, sent, and validated — Java &amp; .NET side by side</p>
       </div>
-      <span class="caret">▼</span>
+      <span class="card-arrow">›</span>
     </div>
-    <div class="step-body">
-      <div class="tags">
-        <span class="tag">Tour cards</span><span class="tag">Dates</span><span class="tag">Price</span><span class="tag">Guide</span>
-      </div>
-      <div class="db-lbl">📦 Data From</div>
-      <div class="tcard">
-        <div class="tname">tour_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 tour_id INT</span></li>
-          <li><span class="dot"></span><span class="fk">🔗 category_id</span></li>
-          <li><span class="dot"></span><span class="fk">🔗 departure_id</span></li>
-        </ul>
-      </div>
-      <div class="tcard">
-        <div class="tname">departure_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 departure_id</span></li>
-          <li><span class="dot"></span>depart_date, end_date</li>
-          <li><span class="dot"></span>no_of_days INT</li>
-        </ul>
-      </div>
-      <div class="tcard">
-        <div class="tname">cost_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span>single_person_cost DECIMAL</li>
-          <li><span class="dot"></span>valid_from / valid_to</li>
-        </ul>
-      </div>
-      <div class="tcard">
-        <div class="tname">tour_guide</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="fk">🔗 tour_id</span></li>
-          <li><span class="dot"></span>name, email, phone</li>
-        </ul>
-      </div>
+    <div class="inside">
+      <span class="ins-tag">Token Creation</span>
+      <span class="ins-tag">Authorization Header</span>
+      <span class="ins-tag">Validation</span>
+      <span class="ins-tag">Google OAuth</span>
+      <span class="ins-tag">Roles</span>
     </div>
-  </div>
+  </a>
 
-  <div class="step-arrow">↓</div>
+</div>
 
-  <!-- 5 -->
-  <div class="step-card t5" id="s5">
-    <div class="step-head" onclick="toggle(this)">
-      <div class="step-num">5</div>
-      <span class="step-emoji">📋</span>
-      <div class="step-info">
-        <div class="step-title">Tour Details</div>
-        <div class="step-sub">Itinerary, costs, all dates</div>
-      </div>
-      <span class="caret">▼</span>
-    </div>
-    <div class="step-body">
-      <div class="tags">
-        <span class="tag">Itinerary</span><span class="tag">Day images</span><span class="tag">Cost slabs</span>
-      </div>
-      <div class="db-lbl">📦 Data From</div>
-      <div class="tcard">
-        <div class="tname">itinerary_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 itinerary_id</span></li>
-          <li><span class="dot"></span><span class="fk">🔗 category_id</span></li>
-          <li><span class="dot"></span>day_no INT</li>
-          <li><span class="dot"></span>itinerary_detail TINYTEXT</li>
-          <li><span class="dot"></span>day_wise_image VARCHAR(255)</li>
-        </ul>
-      </div>
-      <div class="tcard">
-        <div class="tname">cost_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span>single_person_cost</li>
-          <li><span class="dot"></span>extra_person_cost</li>
-          <li><span class="dot"></span>child_with_bed_cost</li>
-          <li><span class="dot"></span>child_without_bed_cost</li>
-          <li><span class="dot"></span>valid_from / valid_to</li>
-        </ul>
-      </div>
-      <div class="tcard">
-        <div class="tname">departure_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span>depart_date, end_date, no_of_days</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+<div class="tip" style="margin-left:auto;margin-right:auto;max-width:560px;margin-top:24px">
+  💡 <b>Interview tip:</b> Start with the <b>JWT flow</b> first — it's asked most often. Then explain the Java or .NET request flow. Finally, mention the DB tables for booking and payment.
+</div>
 
-  <div class="step-arrow">↓</div>
+<footer>e-Tour Project · Spring Boot + ASP.NET Core + MySQL</footer>
 
-  <!-- 6 -->
-  <div class="step-card t6" id="s6">
-    <div class="step-head" onclick="toggle(this)">
-      <div class="step-num">6</div>
-      <span class="step-emoji">🔐</span>
-      <div class="step-info">
-        <div class="step-title">Login / Register</div>
-        <div class="step-sub">Email/PW or Google OAuth</div>
-      </div>
-      <span class="caret">▼</span>
-    </div>
-    <div class="step-body">
-      <div class="tags">
-        <span class="tag">Email/PW</span><span class="tag">Google OAuth</span><span class="tag">Register</span>
-      </div>
-      <div class="db-lbl">📦 Read / Written To</div>
-      <div class="tcard">
-        <div class="tname">customer_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 customer_id INT</span></li>
-          <li><span class="dot"></span>first_name, last_name VARCHAR(100)</li>
-          <li><span class="dot"></span>email VARCHAR(255)</li>
-          <li><span class="dot"></span>phone VARCHAR(20)</li>
-          <li><span class="dot"></span>address TINYTEXT</li>
-          <li><span class="dot"></span>password VARCHAR(255)</li>
-          <li><span class="dot"></span>customer_role ENUM</li>
-          <li><span class="dot"></span>auth_provider ENUM (local / google)</li>
-          <li><span class="dot"></span>profile_completed TINYINT</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <div class="step-arrow">↓</div>
-
-  <!-- 7 -->
-  <div class="step-card t7" id="s7">
-    <div class="step-head" onclick="toggle(this)">
-      <div class="step-num">7</div>
-      <span class="step-emoji">🧳</span>
-      <div class="step-info">
-        <div class="step-title">Book Tour</div>
-        <div class="step-sub">Date, PAX details &amp; amounts</div>
-      </div>
-      <span class="caret">▼</span>
-    </div>
-    <div class="step-body">
-      <div class="tags">
-        <span class="tag">Select Date</span><span class="tag">Add PAX</span><span class="tag">PAX Type</span>
-      </div>
-      <div class="db-lbl">📦 Written To DB</div>
-      <div class="tcard">
-        <div class="tname">booking_header</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 booking_id INT (auto)</span></li>
-          <li><span class="dot"></span>booking_date DATE</li>
-          <li><span class="dot"></span><span class="fk">🔗 customer_id</span></li>
-          <li><span class="dot"></span><span class="fk">🔗 tour_id</span></li>
-          <li><span class="dot"></span>no_of_pax INT</li>
-          <li><span class="dot"></span>tour_amount DECIMAL(10,2)</li>
-          <li><span class="dot"></span>taxes DECIMAL(10,2)</li>
-          <li><span class="dot"></span>total_amount DECIMAL(10,2)</li>
-          <li><span class="dot"></span><span class="fk">🔗 status_id → booking_status_master</span></li>
-        </ul>
-      </div>
-      <div class="tcard">
-        <div class="tname">passenger</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 pax_id (per traveller)</span></li>
-          <li><span class="dot"></span><span class="fk">🔗 booking_id</span></li>
-          <li><span class="dot"></span>pax_name VARCHAR(255)</li>
-          <li><span class="dot"></span>pax_birthdate DATE</li>
-          <li><span class="dot"></span>pax_type TINYTEXT</li>
-          <li><span class="dot"></span>pax_amount DECIMAL(10,2)</li>
-        </ul>
-      </div>
-      <div class="tcard">
-        <div class="tname">booking_status_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 status_id</span></li>
-          <li><span class="dot"></span>status_name — Pending / Confirmed / Cancelled</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <div class="step-arrow">↓</div>
-
-  <!-- 8 -->
-  <div class="step-card t8" id="s8">
-    <div class="step-head" onclick="toggle(this)">
-      <div class="step-num">8</div>
-      <span class="step-emoji">💳</span>
-      <div class="step-info">
-        <div class="step-title">Payment</div>
-        <div class="step-sub">Review total, pay via gateway</div>
-      </div>
-      <span class="caret">▼</span>
-    </div>
-    <div class="step-body">
-      <div class="tags">
-        <span class="tag">Total</span><span class="tag">Mode</span><span class="tag">Txn Ref</span><span class="tag">Status</span>
-      </div>
-      <div class="db-lbl">📦 Read + Written</div>
-      <div class="tcard">
-        <div class="tname">booking_header</div>
-        <ul class="fields">
-          <li><span class="dot"></span>total_amount → shown to customer</li>
-          <li><span class="dot"></span>status_id → updated to Confirmed</li>
-        </ul>
-      </div>
-      <div class="tcard ok-card">
-        <div class="tname" style="color:#6ee7b7">💳 payment_master — INSERT</div>
-        <ul class="fields">
-          <li><span class="dot"></span><span class="pk">🔑 payment_id INT</span></li>
-          <li><span class="dot"></span><span class="fk">🔗 booking_id</span></li>
-          <li><span class="dot"></span>payment_date DATETIME</li>
-          <li><span class="dot"></span>payment_mode TINYTEXT</li>
-          <li><span class="dot"></span>transaction_ref VARCHAR(100)</li>
-          <li><span class="dot"></span>payment_amount DECIMAL(10,2)</li>
-          <li><span class="dot"></span>payment_status VARCHAR(20)</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <div class="step-arrow">↓</div>
-
-  <!-- 9 -->
-  <div class="step-card t9" id="s9">
-    <div class="step-head" onclick="toggle(this)">
-      <div class="step-num">9</div>
-      <span class="step-emoji">✅</span>
-      <div class="step-info">
-        <div class="step-title">Booking Confirmed</div>
-        <div class="step-sub">Records saved · Email sent</div>
-      </div>
-      <span class="caret">▼</span>
-    </div>
-    <div class="step-body">
-      <div class="tags">
-        <span class="tag">Booking ID</span><span class="tag">Confirmation</span>
-      </div>
-      <div class="db-lbl">📦 Final State</div>
-      <div class="tcard ok-card">
-        <div class="tname" style="color:#a7f3d0">✅ booking_header</div>
-        <ul class="fields">
-          <li><span class="dot"></span>status_id → Confirmed</li>
-          <li><span class="dot"></span>booking_id = customer's reference</li>
-        </ul>
-      </div>
-      <div class="tcard ok-card">
-        <div class="tname" style="color:#a7f3d0">✅ passenger ×N rows</div>
-        <ul class="fields">
-          <li><span class="dot"></span>One row per traveller via booking_id</li>
-        </ul>
-      </div>
-      <div class="tcard ok-card">
-        <div class="tname" style="color:#a7f3d0">✅ payment_master</div>
-        <ul class="fields">
-          <li><span class="dot"></span>payment_status = SUCCESS</li>
-          <li><span class="dot"></span>transaction_ref saved</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /page -->
-
-<footer>🔑 PK &nbsp;·&nbsp; 🔗 FK &nbsp;·&nbsp; e-Tour · Real MySQL Workbench Schema</footer>
-
-<script>
-  function toggle(head) {
-    const card = head.closest('.step-card');
-    const body = head.nextElementSibling;
-    const isOpen = card.classList.contains('open');
-    card.classList.toggle('open', !isOpen);
-    body.style.display = isOpen ? 'none' : 'block';
-  }
-  function expandAll() {
-    document.querySelectorAll('.step-card').forEach(c => {
-      c.classList.add('open');
-      c.querySelector('.step-body').style.display = 'block';
-    });
-  }
-  function collapseAll() {
-    document.querySelectorAll('.step-card').forEach(c => {
-      c.classList.remove('open');
-      c.querySelector('.step-body').style.display = 'none';
-    });
-  }
-</script>
 </body>
 </html>
